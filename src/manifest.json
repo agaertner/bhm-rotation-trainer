@@ -1,0 +1,20 @@
+{
+  "name": "Special Forces",
+  "version": "0.0.1",
+  "namespace": "Nekres.RotationTrainer",
+  "package": "Rotation Trainer Module.dll",
+  "manifest_version": 1,
+
+  "description": "This module helps you maximize your effectiveness.",
+  "dependencies": {
+    "bh.blishhud": ">=0.11.6"
+  },
+  "url": "https://github.com/agaertner/bhm-rotation-trainer",
+  "contributors": [
+    {
+      "name": "Nekres",
+      "username": "Nekres.1943"
+    }
+  ],
+  "directories": [ "special_forces" ]
+}
