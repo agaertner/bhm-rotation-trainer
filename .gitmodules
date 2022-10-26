@@ -1,0 +1,3 @@
+[submodule "submodules/litedb"]
+	path = submodules/litedb
+	url = https://github.com/mbdavid/LiteDB.git

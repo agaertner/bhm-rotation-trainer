@@ -112,7 +112,15 @@ namespace Nekres.RotationTrainer.Core.Services
                 {
                     var renderUri = (string)profession.IconBig;
                     var id = Enum.TryParse<ProfessionType>(profession.Id, true, out var prof) ? prof : ProfessionType.Guardian;
-                    _professionRenderRepository.Add(id, GameService.Content.GetRenderServiceTexture(renderUri));
+
+                    var tex = GameService.Content.GetRenderServiceTexture(renderUri);
+
+                    if (tex == null) {
+                        System.Diagnostics.Debug.WriteLine(renderUri);
+                        continue;
+                    }
+
+                    _professionRenderRepository.Add(id, tex);
                     _profNames.Add(id, profession.Name);
                 }
             });
@@ -123,11 +131,24 @@ namespace Nekres.RotationTrainer.Core.Services
             _loadingIndicator.Report("Loading elite specializations..");
             await GameService.Gw2WebApi.AnonymousConnection.Client.V2.Specializations.AllAsync().ContinueWith(t =>
             {
-                if (t.IsFaulted) return;
+                if (t.IsFaulted) {
+                    return;
+                }
+
                 foreach (var specialization in t.Result)
                 {
-                    if (!specialization.Elite) continue;
-                    _eliteRenderRepository.Add(specialization.Id, GameService.Content.GetRenderServiceTexture(specialization.ProfessionIconBig));
+                    if (!specialization.Elite) {
+                        continue;
+                    }
+
+                    var tex = GameService.Content.GetRenderServiceTexture(specialization.ProfessionIconBig);
+
+                    if (tex == null) {
+                        System.Diagnostics.Debug.WriteLine(specialization.ProfessionIconBig);
+                        continue;
+                    }
+
+                    _eliteRenderRepository.Add(specialization.Id, tex);
                     _eliteSpecNames.Add(specialization.Id, specialization.Name);
                 }
             });

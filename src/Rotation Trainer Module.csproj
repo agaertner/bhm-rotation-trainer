@@ -32,16 +32,18 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
     <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\x64\Debug\</OutputPath>
+    <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>TRACE;DEBUG</DefineConstants>
     <DebugType>full</DebugType>
     <PlatformTarget>x64</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <Prefer32Bit>true</Prefer32Bit>
+    <LangVersion>latest</LangVersion>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
-    <OutputPath>bin\x64\Release\</OutputPath>
+    <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <Optimize>true</Optimize>
     <DebugType>pdbonly</DebugType>
@@ -51,10 +53,19 @@
     <Prefer32Bit>true</Prefer32Bit>
     <DocumentationFile>
     </DocumentationFile>
+    <LangVersion>latest</LangVersion>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup>
     <StartupObject />
   </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="..\submodules\litedb\LiteDB\**\*.cs" Link="_Submodules\LiteDB\%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="Core\UI\Controls\AbilityHint.cs" />
+    <Compile Include="Core\UI\Controls\DeleteButton.cs" />
+    <Compile Include="_Extensions\EnumExtensions.cs" />
+    <Compile Include="_Utils\TaskUtil.cs" />
+  </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
     <None Include="Content\bin\Windows\Content\atlas\ui-atlas.xnb" />
@@ -126,14 +137,19 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Controls\TemplateButton.cs" />
+    <Compile Include="Core\UI\Controls\TemplateButton.cs" />
+    <Compile Include="Core\Services\DataService.cs" />
+    <Compile Include="Core\Services\Persistance\TemplateEntity.cs" />
     <Compile Include="Core\Services\RenderService.cs" />
-    <Compile Include="Core\UI\Views\HomeTab\HomeModel.cs" />
-    <Compile Include="Core\UI\Views\HomeTab\HomePresenter.cs" />
-    <Compile Include="Core\UI\Views\HomeTab\HomeView.cs" />
-    <Compile Include="Core\Services\Persistance\RawTemplate.cs" />
-    <Compile Include="Core\Services\Persistance\TemplateReader.cs" />
-    <Compile Include="Player\TemplatePlayer.cs" />
+    <Compile Include="Core\UI\Models\TemplateModel.cs" />
+    <Compile Include="Core\UI\Views\EditView\EditPrersenter.cs" />
+    <Compile Include="Core\UI\Views\EditView\EditView.cs" />
+    <Compile Include="Core\UI\Views\LibraryView\LibraryModel.cs" />
+    <Compile Include="Core\UI\Views\LibraryView\LibraryPresenter.cs" />
+    <Compile Include="Core\UI\Views\LibraryView\LibraryView.cs" />
+    <Compile Include="Core\Player\Models\Rotation.cs" />
+    <Compile Include="Core\Player\Models\Ability.cs" />
+    <Compile Include="Core\Player\TemplatePlayer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RotationTrainerModule.cs" />
   </ItemGroup>
@@ -316,9 +332,10 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-    <None Include="ref\_Instructions.txt" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="ref\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PreBuildEvent>
