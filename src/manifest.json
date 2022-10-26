@@ -1,10 +1,9 @@
 {
   "name": "Special Forces",
-  "version": "0.0.1",
+  "version": "0.1.5",
   "namespace": "Nekres.RotationTrainer",
   "package": "Rotation Trainer Module.dll",
   "manifest_version": 1,
-
   "description": "This module helps you maximize your effectiveness.",
   "dependencies": {
     "bh.blishhud": ">=0.11.6"
@@ -16,5 +15,7 @@
       "username": "Nekres.1943"
     }
   ],
-  "directories": [ "rotation_trainer" ]
+  "directories": [
+    "rotation_trainer"
+  ]
 }
