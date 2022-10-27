@@ -4,12 +4,9 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Nekres.RotationTrainer.Core.UI.Models;
 using System;
-using System.Collections.ObjectModel;
-using System.Linq;
-using HorizontalAlignment = Blish_HUD.Controls.HorizontalAlignment;
 using MouseEventArgs = Blish_HUD.Input.MouseEventArgs;
 
-namespace Nekres.RotationTrainer.Controls {
+namespace Nekres.RotationTrainer.Core.UI.Controls {
     internal class TemplateButton : DetailsButton
     {
         public event EventHandler<MouseEventArgs> EditClick;

@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using Blish_HUD;
+﻿using Blish_HUD;
 using Blish_HUD.Controls;
 using Blish_HUD.Input;
 using Blish_HUD.Settings;
@@ -10,6 +7,9 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using MonoGame.Extended.BitmapFonts;
 using Nekres.RotationTrainer.Player.Models;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace Nekres.RotationTrainer.Core.UI.Controls {
     internal class AbilityHint : Control {
@@ -47,14 +47,15 @@ namespace Nekres.RotationTrainer.Core.UI.Controls {
         private static Texture2D  _frame = RotationTrainerModule.Instance.ContentsManager.GetTexture("skill_frame.png");
         private static Texture2D  _arrow = RotationTrainerModule.Instance.ContentsManager.GetTexture("991944.png");
         private static BitmapFont _font  = GameService.Content.GetFont(ContentService.FontFace.Menomonia, ContentService.FontSize.Size36, ContentService.FontStyle.Regular);
+        private static BitmapFont _smallFont  = GameService.Content.GetFont(ContentService.FontFace.Menomonia, ContentService.FontSize.Size22, ContentService.FontStyle.Regular);
 
-        private Rectangle   _bounds;
-        private string      _text;
+        private        Rectangle  _bounds;
+        private        string     _text;
 
         private int         _arrowHeight;
         private Glide.Tween _arrowTween;
 
-        private int       _repetitions;
+        private int       _remReqActivations;
         private Stopwatch _timer;
 
         private Ability _ability;
@@ -68,8 +69,6 @@ namespace Nekres.RotationTrainer.Core.UI.Controls {
             this.Parent = GameService.Graphics.SpriteScreen;
             this.Size   = GameService.Graphics.SpriteScreen.Size;
 
-            this.Completed = ability.Action == GuildWarsAction.None;
-
             _arrowTween  = GameService.Animation.Tweener.Tween(this, new {_arrowHeight = _arrowHeight + 10}, 0.7f).Repeat();
 
             _abilityBounds.TryGetValue(ability.Action, out _bounds);
@@ -77,7 +76,8 @@ namespace Nekres.RotationTrainer.Core.UI.Controls {
 
             _timer = new Stopwatch();
             _timer.Start();
-            _repetitions = ability.Repetitions > 0 ? ability.Repetitions : Convert.ToInt32(_ability.Duration <= 0);
+            // Single-Usage Ability: If no duration and no repetitions ensure at least one required activation.
+            _remReqActivations = ability.Repetitions > 0 ? ability.Repetitions : Convert.ToInt32(ability.Duration <= 0);
 
             // Find key binding.
             if (RotationTrainerModule.Instance.ActionBindings.TryGetValue(_ability.Action, out SettingEntry<KeyBinding> keyBindingSetting))
@@ -90,10 +90,13 @@ namespace Nekres.RotationTrainer.Core.UI.Controls {
                 
                 _keyBinding.Activated += OnActivated;
             }
+
+            // Complete prematurely if the setup implies an impossible configuration.
+            this.Completed = ability.Action == GuildWarsAction.None || _remReqActivations > 0 && _keyBinding == null;
         }
 
         private void OnActivated(object o, EventArgs e) {
-            _repetitions--;
+            _remReqActivations--;
         }
 
         protected override CaptureType CapturesInput() {
@@ -108,15 +111,11 @@ namespace Nekres.RotationTrainer.Core.UI.Controls {
         }
 
         protected override void Paint(SpriteBatch spriteBatch, Rectangle bounds) {
-            if (_timer == null) {
+            if (_timer == null || this.Completed) {
                 return;
             }
 
-            this.Completed = _timer.Elapsed.TotalMilliseconds >= _ability.Duration && _repetitions <= 0;
-
-            if (this.Completed) {
-                return;
-            }
+            this.Completed = _timer.Elapsed.TotalMilliseconds >= _ability.Duration && _remReqActivations <= 0;
 
             var frameDest = new Rectangle(this.Width / 2 + _bounds.X - _bounds.Width / 2, this.Height - _bounds.Y   - _bounds.Height, _bounds.Width, _bounds.Height);
             var arrowDest = new Rectangle(frameDest.X,                                              frameDest.Y - frameDest.Height - _arrowHeight,        frameDest.Width,    frameDest.Height);
@@ -130,16 +129,16 @@ namespace Nekres.RotationTrainer.Core.UI.Controls {
 
             spriteBatch.DrawOnCtrl(this, _arrow, arrowDest, Color.Red);
 
-            if (_ability.Duration > 0) {
+            if (_ability.Duration > 0 && _timer.Elapsed.TotalMilliseconds < _ability.Duration) {
                 var duration = $"{(_ability.Duration - _timer.Elapsed.TotalMilliseconds) / 1000:0.00}".Replace(',', '.');
-                var durWidth = (int)_font.MeasureString(duration).Width;
-                spriteBatch.DrawStringOnCtrl(this, duration, _font, new Rectangle(frameDest.X + (frameDest.Width - durWidth) / 2, frameDest.Y, durWidth, frameDest.Height), Color.White, false, true);
+                var durWidth = (int)_smallFont.MeasureString(duration).Width;
+                spriteBatch.DrawStringOnCtrl(this, duration, _smallFont, new Rectangle(frameDest.X + (frameDest.Width - durWidth) / 2, frameDest.Y, durWidth, frameDest.Height), Color.White, false, true, 1, HorizontalAlignment.Center, VerticalAlignment.Bottom);
             }
 
-            if (_ability.Repetitions > 0) {
-                var repetition = _repetitions.ToString();
-                var repWidth   = (int)_font.MeasureString(repetition).Width;
-                spriteBatch.DrawStringOnCtrl(this, repetition, _font, new Rectangle(frameDest.X + (frameDest.Width - repWidth) / 2, frameDest.Y, repWidth, frameDest.Height), Color.White, false, true);
+            if (_ability.Repetitions > 0 && _remReqActivations > 0) {
+                var repetition = _remReqActivations.ToString();
+                var repWidth   = (int)_smallFont.MeasureString(repetition).Width;
+                spriteBatch.DrawStringOnCtrl(this, repetition, _smallFont, new Rectangle(frameDest.X + (frameDest.Width - repWidth) / 2, frameDest.Y, repWidth, frameDest.Height), Color.White, false, true, 1, HorizontalAlignment.Center, VerticalAlignment.Top);
             }
         }
 

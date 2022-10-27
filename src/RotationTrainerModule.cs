@@ -8,13 +8,12 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Nekres.RotationTrainer.Core.Services;
-using Nekres.RotationTrainer.Core.UI.Views.HomeTab;
+using Nekres.RotationTrainer.Core.UI.Views;
 using Nekres.RotationTrainer.Player;
 using Nekres.RotationTrainer.Player.Models;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Rectangle = Microsoft.Xna.Framework.Rectangle;
 

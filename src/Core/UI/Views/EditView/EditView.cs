@@ -8,6 +8,7 @@ using Blish_HUD.Input;
 using Microsoft.Xna.Framework;
 using Nekres.RotationTrainer.Core.UI.Controls;
 using Nekres.RotationTrainer.Core.UI.Models;
+using Nekres.RotationTrainer.Player.Models;
 
 namespace Nekres.RotationTrainer.Core.UI.Views {
     internal class EditView : View<EditPrersenter> {
@@ -41,17 +42,35 @@ namespace Nekres.RotationTrainer.Core.UI.Views {
             };
             editTemplate.InputFocusChanged += EditTemplate_InputFocusChanged;
 
-            var rotationInput = new MultilineTextBox {
+            var rotationPanel = new FlowPanel {
                 Parent         = buildPanel,
-                Size           = new Point(buildPanel.ContentRegion.Width, buildPanel.ContentRegion.Height / 2 - 60),
-                Location       = new Point(0,                              editTemplate.Bottom + MARGIN_BOTTOM),
-                Text = this.Presenter.Model.Rotation
+                Size           = new Point(buildPanel.ContentRegion.Width, buildPanel.ContentRegion.Height - 150),
+                Location       = new Point(0,                              editTemplate.Bottom                 + MARGIN_BOTTOM),
+                ControlPadding = new Vector2(5, 5),
+                ShowBorder     = false,
+                CanScroll      = true,
+                ShowTint       = false
             };
-            rotationInput.InputFocusChanged += EditText_InputFocusChanged;
+
+            if (Rotation.TryParse(this.Presenter.Model.Rotation, out var rotation)) {
+
+                int i = 1;
+                foreach (var ability in rotation) {
+                    var abilityDetails = new ViewContainer {
+                        Parent = rotationPanel,
+                        Width = rotationPanel.Width - 13,
+                        Height = 35,
+                        ShowTint = true
+                    };
+
+                    abilityDetails.Show(new AbilityDetailsView(ability, i++));
+                }
+                rotation.Changed += OnRotationChanged;
+            }
 
             var utilRemapper = new UtilityRemapper(this.Presenter.Model.UtilityOrder.ToArray()) {
                 Parent   = buildPanel,
-                Location = new Point(0, rotationInput.Bottom + MARGIN_BOTTOM)
+                Location = new Point(0, rotationPanel.Bottom + MARGIN_BOTTOM)
             };
             utilRemapper.Reordered += OnUtilitiesReordered;
 
@@ -59,7 +78,7 @@ namespace Nekres.RotationTrainer.Core.UI.Views {
             var delBtn = new DeleteButton(RotationTrainerModule.Instance.ContentsManager) {
                 Parent           = buildPanel,
                 Size             = new Point(42, 42),
-                Location         = new Point(buildPanel.ContentRegion.Width - 42, rotationInput.Bottom + MARGIN_BOTTOM),
+                Location         = new Point(buildPanel.ContentRegion.Width - 42, rotationPanel.Bottom + MARGIN_BOTTOM),
                 BasicTooltipText = "Delete"
             };
             delBtn.Click += DeleteButton_Click;
@@ -81,14 +100,6 @@ namespace Nekres.RotationTrainer.Core.UI.Views {
             this.Presenter.Model.Template = ctrl.Text;
         }
 
-        private void EditText_InputFocusChanged(object o, EventArgs e) {
-            var ctrl = (MultilineTextBox)o;
-            if (ctrl.Focused) {
-                return;
-            }
-            this.Presenter.Model.Rotation = ctrl.Text;
-        }
-
         private void DeleteButton_Click(object o, MouseEventArgs e) {
             _deleted = true;
             this.Presenter.Delete();
@@ -98,7 +109,17 @@ namespace Nekres.RotationTrainer.Core.UI.Views {
         private void OnUtilitiesReordered(object o, ValueEventArgs<int[]> e) {
             this.Presenter.Model.UtilityOrder = new ObservableCollection<int>(e.Value);
         }
-        
+
+        private void OnRotationChanged(object o, EventArgs e) {
+            var rot = ((Rotation)o).ToString();
+            if (!Rotation.TryParse(rot, out _)) {
+                ScreenNotification.ShowNotification("Something went wrong.", ScreenNotification.NotificationType.Error);
+                RotationTrainerModule.Logger.Debug($"Unable to deserialize rotation: {rot}");
+                return;
+            }
+            this.Presenter.Model.Rotation = rot;
+        }
+
         protected override void Unload() {
             if (!_deleted) {
                 RotationTrainerModule.Instance.DataService.Upsert(this.Presenter.Model);

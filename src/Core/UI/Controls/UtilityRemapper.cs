@@ -1,10 +1,9 @@
-﻿using Blish_HUD.Controls;
+﻿using Blish_HUD;
+using Blish_HUD.Controls;
 using Blish_HUD.Input;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
-using System.Linq;
-using Blish_HUD;
 
 namespace Nekres.RotationTrainer.Core.UI.Controls {
     internal class UtilityRemapper : Control {

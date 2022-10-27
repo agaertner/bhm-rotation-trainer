@@ -2,6 +2,8 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Text.RegularExpressions;
 
@@ -75,10 +77,30 @@ namespace Nekres.RotationTrainer.Player.Models {
             GuildWarsAction.ProfessionSkill4
         };
 
-        private IEnumerable<Ability> _abilities;
+        public event EventHandler<EventArgs>  Changed;
+        
+        private ObservableCollection<Ability> _abilities;
 
         public Rotation(IEnumerable<Ability> abilities) {
-            _abilities = abilities;
+            _abilities                   =  new ObservableCollection<Ability>(abilities);
+            _abilities.CollectionChanged += OnAbilitiesChanged;
+            this.RenewChangeHandlers();
+        }
+
+        private void OnAbilitiesChanged(object o, NotifyCollectionChangedEventArgs e) {
+            Changed?.Invoke(this, EventArgs.Empty);
+            this.RenewChangeHandlers();
+        }
+
+        private void RenewChangeHandlers() {
+            foreach (var ability in _abilities) {
+                ability.Changed -= OnAbilityChanged;
+                ability.Changed += OnAbilityChanged;
+            }
+        }
+
+        private void OnAbilityChanged(object o, EventArgs e) {
+            Changed?.Invoke(this, EventArgs.Empty);
         }
 
         public static bool TryParse(string rawRotation, out Rotation rotation, int[] utilOrder = null) {

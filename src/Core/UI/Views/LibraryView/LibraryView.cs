@@ -3,12 +3,12 @@ using Blish_HUD.Controls;
 using Blish_HUD.Graphics.UI;
 using Blish_HUD.Input;
 using Microsoft.Xna.Framework;
-using Nekres.RotationTrainer.Controls;
+using Nekres.RotationTrainer.Core.UI.Controls;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Nekres.RotationTrainer.Core.UI.Views.HomeTab {
+namespace Nekres.RotationTrainer.Core.UI.Views {
     internal class LibraryView : View<LibraryPresenter>
     {
         internal event EventHandler<EventArgs> AddNewClick;

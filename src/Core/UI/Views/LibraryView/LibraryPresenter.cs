@@ -3,13 +3,13 @@ using Blish_HUD.Controls;
 using Blish_HUD.Graphics.UI;
 using Blish_HUD.Input;
 using Microsoft.Xna.Framework;
-using Nekres.RotationTrainer.Controls;
-using Nekres.RotationTrainer.Core.UI.Models;
-using System;
 using Microsoft.Xna.Framework.Graphics;
+using Nekres.RotationTrainer.Core.UI.Controls;
+using Nekres.RotationTrainer.Core.UI.Models;
 using Nekres.RotationTrainer.Player.Models;
+using System;
 
-namespace Nekres.RotationTrainer.Core.UI.Views.HomeTab {
+namespace Nekres.RotationTrainer.Core.UI.Views {
     internal class LibraryPresenter : Presenter<LibraryView, LibraryModel>
     {
         public LibraryPresenter(LibraryView view, LibraryModel model) : base(view, model) {

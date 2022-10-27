@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 
 namespace Nekres.RotationTrainer.Player.Models {
-    internal class Ability : IDisposable {
+    internal class Ability {
         private static Dictionary<GuildWarsAction, string> _map = new() {
             { GuildWarsAction.SwapWeapons, "swap" },
             { GuildWarsAction.WeaponSkill1, "1" },
@@ -25,20 +25,48 @@ namespace Nekres.RotationTrainer.Player.Models {
             { GuildWarsAction.Interact, "use" }
         };
 
-        public GuildWarsAction Action { get; }
+        public event EventHandler<EventArgs> Changed;
 
-        public int Duration { get; }
-
-        public int Repetitions { get; }
-
-        public Ability(GuildWarsAction action, int duration = 0, int repetitions = 0) {
-            Action = action;
-            Duration = duration;
-            Repetitions = repetitions;
+        private GuildWarsAction _action;
+        public GuildWarsAction Action {
+            get => _action;
+            set {
+                if (_action == value) {
+                    return;
+                }
+                _action = value;
+                Changed?.Invoke(this, EventArgs.Empty);
+            }
         }
 
-        public virtual void Dispose() {
-            // NOOP
+        private int _duration;
+        public int Duration {
+            get => _duration;
+            set {
+                if (_duration == value) {
+                    return;
+                }
+                _duration = value;
+                Changed?.Invoke(this, EventArgs.Empty);
+            }
+        }
+
+        private int _repetitions;
+        public int Repetitions {
+            get => _repetitions;
+            set {
+                if (_repetitions == value) {
+                    return;
+                }
+                _repetitions = value;
+                Changed?.Invoke(this, EventArgs.Empty);
+            }
+        }
+
+        public Ability(GuildWarsAction action, int duration = 0, int repetitions = 0) {
+            _action = action;
+            _duration = duration;
+            _repetitions = repetitions;
         }
 
         public override string ToString() {
@@ -46,10 +74,10 @@ namespace Nekres.RotationTrainer.Player.Models {
                 return base.ToString();
             }
             if (this.Repetitions > 0) {
-                str += '*' + this.Repetitions;
+                str += $"*{this.Repetitions}";
             }
             if (this.Duration > 0) {
-                str += '/' + this.Duration;
+                str += $"/{this.Duration}";
             }
             return str;
         }

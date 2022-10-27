@@ -8,6 +8,8 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Blish_HUD.Content;
+using Gw2Sharp.ChatLinks;
+using Nekres.RotationTrainer.Player.Models;
 
 namespace Nekres.RotationTrainer.Core.Services
 {
