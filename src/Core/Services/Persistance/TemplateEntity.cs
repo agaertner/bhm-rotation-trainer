@@ -47,7 +47,7 @@ namespace Nekres.RotationTrainer.Core.Services.Persistance {
         /// Remappings of the order of utility keys in the <see cref="Template"/>. 
         /// </summary>
         /// <remarks>
-        /// Each index represents a utility skill from left to right. Values (1-3) represent the reordering.
+        /// Each index represents a utility skill from left to right. Values represent the reordering.
         /// </remarks>
         [BsonField("utilityOrder")] 
         public int[] UtilityOrder { get; set; }

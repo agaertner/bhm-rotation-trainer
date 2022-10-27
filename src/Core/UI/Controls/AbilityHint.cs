@@ -3,8 +3,11 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Blish_HUD;
 using Blish_HUD.Controls;
+using Blish_HUD.Input;
+using Blish_HUD.Settings;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 using MonoGame.Extended.BitmapFonts;
 using Nekres.RotationTrainer.Player.Models;
 
@@ -56,6 +59,8 @@ namespace Nekres.RotationTrainer.Core.UI.Controls {
 
         private Ability _ability;
 
+        private KeyBinding _keyBinding;
+
         public bool Completed { get; private set; }
 
         private AbilityHint(Ability ability) {
@@ -72,8 +77,19 @@ namespace Nekres.RotationTrainer.Core.UI.Controls {
 
             _timer = new Stopwatch();
             _timer.Start();
-            _repetitions = ability.Repetitions > 0 ? ability.Repetitions : 1;
-            ability.Activated += OnActivated;
+            _repetitions = ability.Repetitions > 0 ? ability.Repetitions : Convert.ToInt32(_ability.Duration <= 0);
+
+            // Find key binding.
+            if (RotationTrainerModule.Instance.ActionBindings.TryGetValue(_ability.Action, out SettingEntry<KeyBinding> keyBindingSetting))
+            {
+                _keyBinding = keyBindingSetting.Value;
+
+                if (_keyBinding.PrimaryKey == Keys.None && _keyBinding.ModifierKeys == ModifierKeys.None) {
+                    ScreenNotification.ShowNotification($"You need to assign a key to {_ability.Action.ToFriendlyString()}.");
+                }
+                
+                _keyBinding.Activated += OnActivated;
+            }
         }
 
         private void OnActivated(object o, EventArgs e) {
@@ -85,14 +101,20 @@ namespace Nekres.RotationTrainer.Core.UI.Controls {
         }
 
         protected override void DisposeControl() {
-            _ability.Activated -= OnActivated;
+            _keyBinding.Activated -= OnActivated;
             _timer?.Stop();
             _arrowTween?.CancelAndComplete();
             base.DisposeControl();
         }
 
         protected override void Paint(SpriteBatch spriteBatch, Rectangle bounds) {
-            if (_timer == null || this.Completed) {
+            if (_timer == null) {
+                return;
+            }
+
+            this.Completed = _timer.Elapsed.TotalMilliseconds >= _ability.Duration && _repetitions <= 0;
+
+            if (this.Completed) {
                 return;
             }
 
@@ -108,10 +130,7 @@ namespace Nekres.RotationTrainer.Core.UI.Controls {
 
             spriteBatch.DrawOnCtrl(this, _arrow, arrowDest, Color.Red);
 
-            this.Completed = _timer.Elapsed.TotalMilliseconds >= _ability.Duration && _repetitions <= 0;
-
-            if (_ability.Duration > 0)
-            {
+            if (_ability.Duration > 0) {
                 var duration = $"{(_ability.Duration - _timer.Elapsed.TotalMilliseconds) / 1000:0.00}".Replace(',', '.');
                 var durWidth = (int)_font.MeasureString(duration).Width;
                 spriteBatch.DrawStringOnCtrl(this, duration, _font, new Rectangle(frameDest.X + (frameDest.Width - durWidth) / 2, frameDest.Y, durWidth, frameDest.Height), Color.White, false, true);

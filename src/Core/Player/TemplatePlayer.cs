@@ -1,12 +1,11 @@
-﻿using Nekres.RotationTrainer.Player.Models;
+﻿using Nekres.RotationTrainer.Core.UI.Controls;
+using Nekres.RotationTrainer.Player.Models;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using Blish_HUD.Controls;
 using Microsoft.Xna.Framework.Input;
-using Nekres.RotationTrainer.Core.UI.Controls;
 
 namespace Nekres.RotationTrainer.Player {
     internal class TemplatePlayer : IDisposable
@@ -25,6 +24,12 @@ namespace Nekres.RotationTrainer.Player {
                 _cancelToken.Cancel();
                 _cancelToken.Dispose();
             }
+
+            if (RotationTrainerModule.Instance.ActionBindings.Values.Any(x => x.Value.PrimaryKey == Keys.None && x.Value.ModifierKeys == ModifierKeys.None)) {
+                ScreenNotification.ShowNotification("Key bindings need to be assigned.");
+                return;
+            }
+
             _cancelToken = new CancellationTokenSource();
 
             var current     = new Thread(() => PlayRotation(rotation));

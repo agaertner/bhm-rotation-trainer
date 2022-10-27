@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.ObjectModel;
+using System.Linq;
 using Blish_HUD;
 using Blish_HUD.Controls;
 using Blish_HUD.Graphics.UI;
@@ -47,10 +49,16 @@ namespace Nekres.RotationTrainer.Core.UI.Views {
             };
             rotationInput.InputFocusChanged += EditText_InputFocusChanged;
 
+            var utilRemapper = new UtilityRemapper(this.Presenter.Model.UtilityOrder.ToArray()) {
+                Parent   = buildPanel,
+                Location = new Point(0, rotationInput.Bottom + MARGIN_BOTTOM)
+            };
+            utilRemapper.Reordered += OnUtilitiesReordered;
+
             // Delete button
             var delBtn = new DeleteButton(RotationTrainerModule.Instance.ContentsManager) {
                 Parent           = buildPanel,
-                Size             = new Point(42,                                  42),
+                Size             = new Point(42, 42),
                 Location         = new Point(buildPanel.ContentRegion.Width - 42, rotationInput.Bottom + MARGIN_BOTTOM),
                 BasicTooltipText = "Delete"
             };
@@ -87,6 +95,10 @@ namespace Nekres.RotationTrainer.Core.UI.Views {
             ((DeleteButton)o).Parent.Hide();
         }
 
+        private void OnUtilitiesReordered(object o, ValueEventArgs<int[]> e) {
+            this.Presenter.Model.UtilityOrder = new ObservableCollection<int>(e.Value);
+        }
+        
         protected override void Unload() {
             if (!_deleted) {
                 RotationTrainerModule.Instance.DataService.Upsert(this.Presenter.Model);

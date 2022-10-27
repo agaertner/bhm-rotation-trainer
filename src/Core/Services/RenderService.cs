@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Blish_HUD.Content;
 
 namespace Nekres.RotationTrainer.Core.Services
 {
@@ -14,10 +15,10 @@ namespace Nekres.RotationTrainer.Core.Services
     {
         public event EventHandler<ValueEventArgs<bool>> LoadingChanged;
 
-        private Dictionary<int, Texture2D> _eliteRenderRepository;
-        private Dictionary<ProfessionType, Texture2D> _professionRenderRepository;
-        private Dictionary<int, string> _eliteSpecNames;
-        private Dictionary<ProfessionType, string> _profNames;
+        private Dictionary<int, AsyncTexture2D>            _eliteRenderRepository;
+        private Dictionary<ProfessionType, AsyncTexture2D> _professionRenderRepository;
+        private Dictionary<int, string>                    _eliteSpecNames;
+        private Dictionary<ProfessionType, string>         _profNames;
 
         private bool _isLoading;
 
@@ -36,11 +37,11 @@ namespace Nekres.RotationTrainer.Core.Services
 
         public RenderService(IProgress<string> loadingIndicator)
         {
-            _loadingIndicator = loadingIndicator;
-            _eliteRenderRepository = new Dictionary<int, Texture2D>();
-            _professionRenderRepository = new Dictionary<ProfessionType, Texture2D>();
-            _eliteSpecNames = new Dictionary<int, string>();
-            _profNames = new Dictionary<ProfessionType, string>();
+            _loadingIndicator           = loadingIndicator;
+            _eliteRenderRepository      = new Dictionary<int, AsyncTexture2D>();
+            _professionRenderRepository = new Dictionary<ProfessionType, AsyncTexture2D>();
+            _eliteSpecNames             = new Dictionary<int, string>();
+            _profNames                  = new Dictionary<ProfessionType, string>();
         }
 
         public void DownloadIcons()

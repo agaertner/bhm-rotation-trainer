@@ -1,12 +1,9 @@
-﻿using System;
+﻿using Blish_HUD.Controls;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
-using Blish_HUD.Controls;
-using Blish_HUD.Input;
-using Blish_HUD.Settings;
-using Microsoft.Xna.Framework.Input;
 
 namespace Nekres.RotationTrainer.Player.Models {
     public enum GuildWarsAction {
@@ -46,9 +43,12 @@ namespace Nekres.RotationTrainer.Player.Models {
             {"heal", GuildWarsAction.HealingSkill},
             {"6", GuildWarsAction.HealingSkill},
             {"7", GuildWarsAction.UtilitySkill1},
-            {"8", GuildWarsAction.UtilitySkill2},
-            {"9", GuildWarsAction.UtilitySkill3},
-            {"0", GuildWarsAction.EliteSkill},
+            {"u1", GuildWarsAction.UtilitySkill1},
+            { "8", GuildWarsAction.UtilitySkill2},
+            { "u2", GuildWarsAction.UtilitySkill2 },
+            { "9", GuildWarsAction.UtilitySkill3},
+            { "u3", GuildWarsAction.UtilitySkill3 },
+            { "0", GuildWarsAction.EliteSkill},
             {"elite", GuildWarsAction.EliteSkill},
             {"f1", GuildWarsAction.ProfessionSkill1},
             {"f2", GuildWarsAction.ProfessionSkill2},
@@ -128,15 +128,8 @@ namespace Nekres.RotationTrainer.Player.Models {
                     action = _toolbeltRemappable[utilOrder[Array.IndexOf(_toolbeltRemappable, action)]];
                 }
 
-                // Find key binding.
-                if (!RotationTrainerModule.Instance.ActionBindings.TryGetValue(action, out SettingEntry<KeyBinding> keyBindingSetting)
-                 || keyBindingSetting.Value.PrimaryKey == Keys.None && keyBindingSetting.Value.ModifierKeys == ModifierKeys.None) {
-                    ScreenNotification.ShowNotification($"You need to assign a key to {action.ToFriendlyString()}.");
-                    return false;
-                }
-
                 // Add ability to rotation
-                abilities.Add(new Ability(action, keyBindingSetting.Value, duration, repetitions));
+                abilities.Add(new Ability(action, duration, repetitions));
             }
 
             rotation = new Rotation(abilities);
@@ -149,6 +142,13 @@ namespace Nekres.RotationTrainer.Player.Models {
 
         IEnumerator IEnumerable.GetEnumerator() {
             return GetEnumerator();
+        }
+
+        public override string ToString() {
+            if (!_abilities.Any()) {
+                return base.ToString();
+            }
+            return string.Join(" ", _abilities.Select(x => x.ToString()));
         }
 
     }

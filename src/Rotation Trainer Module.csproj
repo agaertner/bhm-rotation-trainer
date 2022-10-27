@@ -63,6 +63,7 @@
     <Compile Include="..\submodules\litedb\LiteDB\**\*.cs" Link="_Submodules\LiteDB\%(RecursiveDir)%(Filename)%(Extension)" />
     <Compile Include="Core\UI\Controls\AbilityHint.cs" />
     <Compile Include="Core\UI\Controls\DeleteButton.cs" />
+    <Compile Include="Core\UI\Controls\UtilityRemapper.cs" />
     <Compile Include="_Extensions\EnumExtensions.cs" />
     <Compile Include="_Utils\TaskUtil.cs" />
   </ItemGroup>

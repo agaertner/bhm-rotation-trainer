@@ -24,6 +24,13 @@ namespace Nekres.RotationTrainer.Core.Services {
                 Connection = ConnectionType.Shared
             });
             _ctx = _db.GetCollection<TemplateEntity>("templates");
+
+            Upsert(new TemplateModel(new Guid("97d7ddf8-06cc-4ae4-8a7a-45a2ea5ea712")) {
+                Title = "Condition Untamed (Example)",
+                Template = "[&DQQePSA2SBd5AAAAARsAALYAAAC/AAAAwAAAAD0AAAAAAAAAAAAAAAAAAAA=]",
+                BuildId = GameService.Gw2Mumble.Info.BuildId,
+                Rotation = "2 3 4 u1 1/4000 2 3 elite 4 u2 1/4000 2 heal"
+            });
         }
 
         public void Upsert(TemplateModel model) {
