@@ -33,7 +33,7 @@ namespace Nekres.RotationTrainer.Core.UI.Controls {
         private readonly string _defaultValue;
 
         /// <summary>
-        /// Verifies that the the <see cref="input"/> <see langword="string"/> can be converted to the target-type <see cref="T"/>.
+        /// Verifies that the <see cref="input"/> <see langword="string"/> can be converted to the target-type <see cref="T"/>.
         /// </summary>
         /// <remarks>
         /// Used to ensure that user-defined text in <see cref="_defaultValue"/> and <see cref="_inputTextBox"/> meets expectations.
@@ -66,6 +66,7 @@ namespace Nekres.RotationTrainer.Core.UI.Controls {
 
         public static void ShowPrompt(Action<bool, T> callback, string text, string defaultValue = "", string confirmButtonText = "Confirm", string cancelButtonText = "Cancel")
         {
+            // Avoid stacking: Do not spawn another prompt ontop of an active one.
             if (_singleton != null) {
                 return;
             }
@@ -83,7 +84,7 @@ namespace Nekres.RotationTrainer.Core.UI.Controls {
                     Text     = _confirmButtonText,
                     Size     = _confirmButtonBounds.Size,
                     Location = _confirmButtonBounds.Location,
-                    Enabled  = TryParse(_defaultValue, out _)
+                    Enabled  = this.TryParse(_defaultValue, out _)
                 };
                 _confirmButton.Click += (_, _) => this.Confirm();
             }
@@ -135,7 +136,7 @@ namespace Nekres.RotationTrainer.Core.UI.Controls {
             if (_inputTextBox != null) {
                 return;
             }
-            string defaultText = TryParse(_defaultValue, out _) ? _defaultValue : string.Empty;
+            string defaultText = this.TryParse(_defaultValue, out _) ? _defaultValue : string.Empty;
             _inputTextBox = new TextBox
             {
                 Parent      = this,
