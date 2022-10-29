@@ -1,84 +1,131 @@
+using Gw2Sharp.WebApi.V2.Models;
 using LiteDB;
 using Nekres.RotationTrainer.Core.UI.Models;
 using System;
-using System.Collections.ObjectModel;
 using System.Linq;
+using Blish_HUD;
 
 namespace Nekres.RotationTrainer.Core.Services.Persistance {
     internal class TemplateEntity
     {
         /// <summary>
-        /// Internal database id.
-        /// </summary>
-        [BsonId(true)]
-        public int _id { get; set; }
-
-        /// <summary>
         /// Unique identifier of this build.
         /// </summary>
-        [BsonField("id")]
-        public Guid Id { get; set; }
+        [BsonId(true)]
+        public Guid Id { get; }
 
         /// <summary>
-        /// Custom title of this build.
+        /// Indicates when this entity has been created (UTC).
         /// </summary>
-        [BsonField("title")]
-        public string Title { get; set; }
+        [BsonField("CreationDate")]
+        public DateTime CreationDate { get; }
+
+        /// <summary>
+        /// Indicates when this entity was last modified (UTC).
+        /// </summary>
+        [BsonField("ModifiedDate")]
+        public DateTime ModifiedDate { get; set; }
 
         /// <summary>
         /// The Guild Wars 2 client build id.
         /// </summary>
-        [BsonField("buildId")] 
-        public int BuildId { get; set; }
+        [BsonField("BuildId")]
+        public int ClientBuildId { get; }
+
+        /// <summary>
+        /// Custom title of this build.
+        /// </summary>
+        [BsonField("Title")]
+        public string Title { get; set; }
 
         /// <summary>
         /// The build template code.
         /// </summary>
-        [BsonField("template")] 
-        public string Template { get; set; }
+        [BsonField("BuildTemplate")] 
+        public string BuildTemplate { get; set; }
+
+        /// <summary>
+        /// Primary Weapon - Main Hand
+        /// </summary>
+        [BsonField("PrimaryWeaponMainHand")]
+        public SkillWeaponType PrimaryWeaponMainHand { get; set; }
+
+        /// <summary>
+        /// Primary Weapon - Off Hand
+        /// </summary>
+        [BsonField("PrimaryWeaponOffHand")]
+        public SkillWeaponType PrimaryWeaponOffHand { get; set; }
+
+        /// <summary>
+        /// Secondary Weapon - Main Hand
+        /// </summary>
+        [BsonField("SecondaryWeaponMainHand")]
+        public SkillWeaponType SecondaryWeaponMainHand { get; set; }
+
+        /// <summary>
+        /// Secondary Weapon - Off Hand
+        /// </summary>
+        [BsonField("SecondaryWeaponOffHand")]
+        public SkillWeaponType SecondaryWeaponOffHand { get; set; }
 
         /// <summary>
         /// The rotation.
         /// </summary>
-        [BsonField("rotation")] 
+        [BsonField("Rotation")] 
         public string Rotation { get; set; }
 
         /// <summary>
-        /// Remappings of the order of utility keys in the <see cref="Template"/>. 
+        /// Remappings of the order of utility keys in the <see cref="BuildTemplate"/>. 
         /// </summary>
         /// <remarks>
         /// Each index represents a utility skill from left to right. Values represent the reordering.
         /// </remarks>
-        [BsonField("utilityOrder")] 
+        [BsonField("UtilityOrder")] 
         public int[] UtilityOrder { get; set; }
 
-        public TemplateEntity(Guid id) {
-            this.Id             = id;
-            this.Title          = string.Empty;
-            this.BuildId        = 0;
-            this.Rotation       = string.Empty;
-            this.Template       = string.Empty;
-            this.UtilityOrder = new [] {0, 1, 2};
+        public TemplateEntity() : this(Guid.NewGuid(), DateTime.UtcNow, DateTime.UtcNow, 0, 
+                                       string.Empty, string.Empty, SkillWeaponType.None, SkillWeaponType.None,
+                                       SkillWeaponType.None, SkillWeaponType.None, string.Empty, new [] {0,1,2}) {
+            /* NOOP */
+        }
+
+        public TemplateEntity(Guid id, DateTime creationDate, DateTime modifiedDate, int clientBuildId, string title, string buildTemplate, 
+                              SkillWeaponType primaryWeaponMainHand,   SkillWeaponType primaryWeaponOffHand, 
+                              SkillWeaponType secondaryWeaponMainHand, SkillWeaponType secondaryWeaponOffHand, string rotation, int[] utilityOrder) {
+            this.Id           = id;
+            this.CreationDate = creationDate;
+            this.ModifiedDate = modifiedDate;
+
+            this.ClientBuildId = clientBuildId;
+            this.Title         = title;
+
+            this.BuildTemplate         = buildTemplate;
+            this.PrimaryWeaponMainHand = primaryWeaponMainHand;
+            this.PrimaryWeaponOffHand  = primaryWeaponOffHand;
+            this.SecondaryWeaponMainHand = secondaryWeaponMainHand;
+            this.SecondaryWeaponOffHand = secondaryWeaponOffHand;
+
+            this.Rotation     = rotation;
+            this.UtilityOrder = utilityOrder;
         }
 
         public TemplateModel ToModel() {
-            return new TemplateModel(this.Id) {
-                Title          = this.Title,
-                BuildId        = this.BuildId,
-                UtilityOrder = new ObservableCollection<int>(this.UtilityOrder),
-                Rotation       = this.Rotation,
-                Template       = this.Template,
+            return new TemplateModel(this.Id, this.CreationDate, this.ModifiedDate, this.ClientBuildId) {
+                Title         = this.Title,
+
+                BuildTemplate    = this.BuildTemplate,
+                PrimaryWeaponSet   = new TemplateModel.WeaponSet(SkillWeaponType.None, SkillWeaponType.None),
+                SecondaryWeaponSet = new TemplateModel.WeaponSet(SkillWeaponType.None, SkillWeaponType.None),
+
+                Rotation      = this.Rotation,
+                UtilityOrder  = this.UtilityOrder,
             };
         }
 
         public static TemplateEntity FromModel(TemplateModel model) {
-            return new TemplateEntity(model.Id) {
-                BuildId        = model.BuildId,
-                Rotation       = model.Rotation,
-                Template       = model.Template,
-                Title          = model.Title,
-                UtilityOrder   = model.UtilityOrder.ToArray()
-            };
+            return new TemplateEntity(model.Id, model.CreationDate, model.ModifiedDate, model.ClientBuildId,
+                                      model.Title, model.BuildTemplate, model.PrimaryWeaponSet.MainHand, model.PrimaryWeaponSet.OffHand, 
+                                      model.SecondaryWeaponSet.MainHand, model.SecondaryWeaponSet.OffHand, model.Rotation, model.UtilityOrder.ToArray());
         }
     }
 }

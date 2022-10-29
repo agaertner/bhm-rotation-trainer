@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Gw2Sharp.WebApi.V2.Models;
 
 namespace Nekres.RotationTrainer.Core.Services {
     internal class DataService : IDisposable {
@@ -25,11 +26,12 @@ namespace Nekres.RotationTrainer.Core.Services {
             });
             _ctx = _db.GetCollection<TemplateEntity>("templates");
 
-            Upsert(new TemplateModel(new Guid("97d7ddf8-06cc-4ae4-8a7a-45a2ea5ea712")) {
-                Title = "Condition Untamed (Example)",
-                Template = "[&DQQePSA2SBd5AAAAARsAALYAAAC/AAAAwAAAAD0AAAAAAAAAAAAAAAAAAAA=]",
-                BuildId = GameService.Gw2Mumble.Info.BuildId,
-                Rotation = "2 3 4 u1 1/4000 2 3 elite 4 u2 1/4000 2 heal"
+            Upsert(new TemplateModel(new Guid("97d7ddf8-06cc-4ae4-8a7a-45a2ea5ea712"), DateTime.UtcNow, DateTime.UtcNow, GameService.Gw2Mumble.Info.BuildId) {
+                Title            = "Condition Untamed (Example)",
+                BuildTemplate    = "[&DQQePSA2SBd5AAAAARsAALYAAAC/AAAAwAAAAD0AAAAAAAAAAAAAAAAAAAA=]",
+                PrimaryWeaponSet   = new TemplateModel.WeaponSet(SkillWeaponType.Axe, SkillWeaponType.Axe),
+                SecondaryWeaponSet = new TemplateModel.WeaponSet(SkillWeaponType.None, SkillWeaponType.None),
+                Rotation         = "2 3 4 u1 1/4000 2 3 elite 4 u2 1/4000 2 heal"
             });
         }
 
@@ -41,11 +43,15 @@ namespace Nekres.RotationTrainer.Core.Services {
                 _ctx.Insert(TemplateEntity.FromModel(model));
                 GameService.Content.PlaySoundEffectByName("color-change");
             } else {
-                e.Title          = model.Title;
-                e.Rotation       = model.Rotation;
-                e.BuildId        = model.BuildId;
-                e.Template       = model.Template;
-                e.UtilityOrder = model.UtilityOrder.ToArray();
+                e.Title                   = model.Title;
+                e.Rotation                = model.Rotation;
+                e.BuildTemplate           = model.BuildTemplate;
+                e.PrimaryWeaponMainHand   = model.PrimaryWeaponSet.MainHand;
+                e.PrimaryWeaponOffHand    = model.PrimaryWeaponSet.OffHand;
+                e.SecondaryWeaponMainHand = model.SecondaryWeaponSet.MainHand;
+                e.SecondaryWeaponOffHand  = model.SecondaryWeaponSet.OffHand;
+                e.UtilityOrder            = model.UtilityOrder.ToArray();
+                e.ModifiedDate            = DateTime.UtcNow;
                 _ctx.Update(e);
             }
         }

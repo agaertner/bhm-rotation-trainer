@@ -58,9 +58,9 @@ namespace Nekres.RotationTrainer.Core.UI.Views {
                 if (action == GuildWarsAction.None) {
                     continue;
                 }
-                actionDropdown.Items.Add(action.ToString()); //TODO: Dropdown with display value (friendly name)
+                actionDropdown.Items.Add(action.ToFriendlyString());
             }
-            actionDropdown.SelectedItem =  this.Presenter.Model.Action.ToString();
+            actionDropdown.SelectedItem =  this.Presenter.Model.Action.ToFriendlyString();
             actionDropdown.ValueChanged += OnActionChanged;
 
             var durationInput = new StandardButton {
@@ -114,7 +114,7 @@ namespace Nekres.RotationTrainer.Core.UI.Views {
 
                 this.Presenter.Model.Duration = n;
                 durationLabel.Text            = $"{n}ms";
-            }, "Enter a Duration in Milliseconds:", this.Presenter.Model.Duration);
+            }, "Enter a Duration in Milliseconds:", this.Presenter.Model.Duration.ToString());
 
             repetitionsInput.Click += (o, e) => NumericInputPrompt.ShowPrompt((confirmed, n) => {
                 if (!confirmed) {
@@ -123,13 +123,13 @@ namespace Nekres.RotationTrainer.Core.UI.Views {
 
                 this.Presenter.Model.Repetitions = n;
                 repetitionsLabel.Text            = n.ToString();
-            }, "Enter a Number of Repetitions:", this.Presenter.Model.Repetitions);
+            }, "Enter a Number of Repetitions:", this.Presenter.Model.Repetitions.ToString());
 
             base.Build(buildPanel);
         }
 
         private void OnActionChanged(object o, ValueChangedEventArgs e) {
-            if (!Enum.TryParse<GuildWarsAction>(e.CurrentValue, out var newAction)) {
+            if (!Enum.TryParse<GuildWarsAction>(e.CurrentValue.Replace(" ", string.Empty), out var newAction)) {
                 return;
             }
             this.Presenter.Model.Action = newAction;

@@ -114,8 +114,8 @@ namespace Nekres.RotationTrainer.Core.UI.Views {
         private void OnSortChanged(object o, ValueChangedEventArgs e) {
             string filter = ((Dropdown)o).SelectedItem;
             this.TemplatePanel.SortChildren<TemplateButton>((x, y) => {
-                x.Visible = filter.Equals(FILTER_ALL) || x.TemplateModel.BuildId.Equals(GameService.Gw2Mumble.Info.BuildId);
-                y.Visible = filter.Equals(FILTER_ALL) || y.TemplateModel.BuildId.Equals(GameService.Gw2Mumble.Info.BuildId); ;
+                x.Visible = filter.Equals(FILTER_ALL) || x.TemplateModel.ClientBuildId.Equals(GameService.Gw2Mumble.Info.BuildId);
+                y.Visible = filter.Equals(FILTER_ALL) || y.TemplateModel.ClientBuildId.Equals(GameService.Gw2Mumble.Info.BuildId); ;
                 if (!x.Visible || !y.Visible) {
                     return 0;
                 }

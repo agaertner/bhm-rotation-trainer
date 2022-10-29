@@ -5,6 +5,8 @@ using Blish_HUD;
 using Blish_HUD.Controls;
 using Blish_HUD.Graphics.UI;
 using Blish_HUD.Input;
+using Gw2Sharp.ChatLinks;
+using Gw2Sharp.Models;
 using Microsoft.Xna.Framework;
 using Nekres.RotationTrainer.Core.UI.Controls;
 using Nekres.RotationTrainer.Core.UI.Models;
@@ -32,20 +34,40 @@ namespace Nekres.RotationTrainer.Core.UI.Views {
             };
             editTitle.InputFocusChanged += EditTitle_InputFocusChanged;
 
-            var editTemplate = new TextBox {
-                Parent              = buildPanel,
-                Size                = new Point(buildPanel.ContentRegion.Width, 42),
-                Location            = new Point(0,                              editTitle.Bottom + MARGIN_BOTTOM),
-                Font                = GameService.Content.GetFont(ContentService.FontFace.Menomonia, ContentService.FontSize.Size24, ContentService.FontStyle.Regular),
-                HorizontalAlignment = HorizontalAlignment.Center,
-                Text                = this.Presenter.Model.Template
+            var templateButton = new StoreButton(RotationTrainerModule.Instance.ContentsManager) {
+                Parent   = buildPanel,
+                Location = new Point(0, editTitle.Bottom + MARGIN_BOTTOM),
+                Size     = new Point(32, 32)
             };
-            editTemplate.InputFocusChanged += EditTemplate_InputFocusChanged;
+
+            string professionText = string.Empty;
+
+            if (this.Presenter.Model.TryGetBuildChatLink(out var buildChatLink)) {
+                professionText = $"{buildChatLink.Profession} Build";
+            }
+
+            var professionLabel = new Label {
+                Parent              = buildPanel,
+                Size                = new Point(buildPanel.ContentRegion.Width, templateButton.Height),
+                Location            = new Point(templateButton.Right + 5, templateButton.Top),
+                Font                = GameService.Content.GetFont(ContentService.FontFace.Menomonia, ContentService.FontSize.Size24, ContentService.FontStyle.Regular),
+                HorizontalAlignment = HorizontalAlignment.Left,
+                Text                = professionText
+            };
+
+            templateButton.Click += (_, _) => {
+                BuildChatLinkInputPrompt.ShowPrompt((confirmed, link) => {
+                    if (!confirmed) {
+                        return;
+                    }
+                    this.Presenter.Model.BuildTemplate = $"{link.Profession} Build"; ;
+                }, "Enter a Build Chat Link:", this.Presenter.Model.BuildTemplate);
+            };
 
             var rotationPanel = new FlowPanel {
                 Parent         = buildPanel,
                 Size           = new Point(buildPanel.ContentRegion.Width, buildPanel.ContentRegion.Height - 150),
-                Location       = new Point(0,                              editTemplate.Bottom                 + MARGIN_BOTTOM),
+                Location       = new Point(0,                              professionLabel.Bottom          + MARGIN_BOTTOM),
                 ControlPadding = new Vector2(5, 5),
                 ShowBorder     = false,
                 CanScroll      = true,
@@ -83,6 +105,7 @@ namespace Nekres.RotationTrainer.Core.UI.Views {
             };
             delBtn.Click += DeleteButton_Click;
         }
+
         private void EditTitle_InputFocusChanged(object o, EventArgs e) {
             var ctrl = (TextBox)o;
             if (ctrl.Focused) {
@@ -92,14 +115,6 @@ namespace Nekres.RotationTrainer.Core.UI.Views {
             ((StandardWindow)ctrl.Parent).Title = $"Edit Template - {ctrl.Text}";
         }
 
-        private void EditTemplate_InputFocusChanged(object o, EventArgs e) {
-            var ctrl = (TextBox)o;
-            if (ctrl.Focused) {
-                return;
-            }
-            this.Presenter.Model.Template = ctrl.Text;
-        }
-
         private void DeleteButton_Click(object o, MouseEventArgs e) {
             _deleted = true;
             this.Presenter.Delete();
@@ -107,7 +122,7 @@ namespace Nekres.RotationTrainer.Core.UI.Views {
         }
 
         private void OnUtilitiesReordered(object o, ValueEventArgs<int[]> e) {
-            this.Presenter.Model.UtilityOrder = new ObservableCollection<int>(e.Value);
+            this.Presenter.Model.UtilityOrder = e.Value;
         }
 
         private void OnRotationChanged(object o, EventArgs e) {

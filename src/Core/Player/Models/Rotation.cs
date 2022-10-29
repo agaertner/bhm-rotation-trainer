@@ -104,8 +104,6 @@ namespace Nekres.RotationTrainer.Player.Models {
         }
 
         public static bool TryParse(string rawRotation, out Rotation rotation, int[] utilOrder = null) {
-
-            utilOrder ??= new[] { 0,1,2 };
             rotation = null;
 
             if (string.IsNullOrEmpty(rawRotation)) {
@@ -144,6 +142,7 @@ namespace Nekres.RotationTrainer.Player.Models {
                 }
 
                 // Applying user-defined utility order.
+                utilOrder ??= new[] { 0, 1, 2 };
                 if (_utilityRemappable.Contains(action)) {
                     action = _utilityRemappable[utilOrder[Array.IndexOf(_utilityRemappable, action)]];
                 } else if (_toolbeltRemappable.Contains(action)) {

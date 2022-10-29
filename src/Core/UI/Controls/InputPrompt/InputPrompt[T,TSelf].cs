@@ -1,22 +1,21 @@
 ﻿using Blish_HUD;
 using Blish_HUD.Controls;
+using Blish_HUD.Input;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 using MonoGame.Extended.BitmapFonts;
 using System;
-using System.Globalization;
-using Blish_HUD.Input;
-using Microsoft.Xna.Framework.Input;
 using Color = Microsoft.Xna.Framework.Color;
 using Point = Microsoft.Xna.Framework.Point;
 using Rectangle = Microsoft.Xna.Framework.Rectangle;
 
-namespace Nekres.RotationTrainer.Core.Controls {
-    internal sealed class NumericInputPrompt : Container
+namespace Nekres.RotationTrainer.Core.UI.Controls {
+    internal abstract class InputPrompt<T, TSelf> : Container where TSelf : InputPrompt<T, TSelf> 
     {
-        private static Texture2D _bgTexture = GameService.Content.GetTexture("tooltip");
-        private static BitmapFont _font = GameService.Content.GetFont(ContentService.FontFace.Menomonia, ContentService.FontSize.Size24, ContentService.FontStyle.Regular);
+        private static Texture2D _bgTexture;
+        private BitmapFont _font;
 
-        private static NumericInputPrompt _singleton;
+        private static TSelf _singleton;
 
         private Rectangle _confirmButtonBounds;
         private Rectangle _cancelButtonBounds;
@@ -26,34 +25,52 @@ namespace Nekres.RotationTrainer.Core.Controls {
         private StandardButton _cancelButton;
         private TextBox _inputTextBox;
 
-        private readonly Action<bool, int> _callback;
+        private readonly Action<bool, T> _callback;
         private readonly string _text;
         private readonly string _confirmButtonText;
         private readonly string _cancelButtonButtonText;
 
-        private readonly int _defaultValue;
+        private readonly string _defaultValue;
 
-        private NumericInputPrompt(Action<bool, int> callback, string text, int defaultValue, string confirmButtonText, string cancelButtonText)
+        /// <summary>
+        /// Verifies that the the <see cref="input"/> <see langword="string"/> can be converted to the target-type <see cref="T"/>.
+        /// </summary>
+        /// <remarks>
+        /// Used to ensure that user-defined text in <see cref="_defaultValue"/> and <see cref="_inputTextBox"/> meets expectations.
+        /// </remarks>
+        /// <param name="input">String to validate.</param>
+        /// <param name="result">Object of type <see cref="T"/> if <see langword="true"/>; otherwise <see langword="default"/></param>
+        /// <returns><see langword="True"/> if parsing was successful; otherrwise <see langword="false"/>.</returns>
+        protected abstract bool TryParse(string input, out T result);
+
+        protected InputPrompt(Action<bool, T> callback, string text, string defaultValue, string confirmButtonText, string cancelButtonText)
         {
-            _callback = callback;
-            _text = text;
-            _defaultValue = defaultValue;
-            _confirmButtonText = confirmButtonText;
-            _cancelButtonButtonText = cancelButtonText;
-            this.ZIndex = 999;
+            _callback               =  callback;
+            _text                   =  text;
+            _defaultValue           =  defaultValue;
+            _confirmButtonText      =  confirmButtonText;
+            _cancelButtonButtonText =  cancelButtonText;
+
+            _bgTexture ??= GameService.Content.GetTexture("tooltip");
+            _font      = GameService.Content.GetFont(ContentService.FontFace.Menomonia, ContentService.FontSize.Size24, ContentService.FontStyle.Regular);
+
+            this.Parent   = Graphics.SpriteScreen;
+            this.Location = Point.Zero;
+            this.Size     = Graphics.SpriteScreen.Size;
+            
+            base.ZIndex = 999;
+            base.Show();
+
             GameService.Input.Keyboard.KeyPressed += OnKeyPressed;
         }
 
-        public static void ShowPrompt(Action<bool, int> callback, string text, int defaultValue = 0, string confirmButtonText = "Confirm", string cancelButtonText = "Cancel")
+        public static void ShowPrompt(Action<bool, T> callback, string text, string defaultValue = "", string confirmButtonText = "Confirm", string cancelButtonText = "Cancel")
         {
-            if (_singleton != null) return;
-            _singleton = new NumericInputPrompt(callback, text, defaultValue, confirmButtonText, cancelButtonText)
-            {
-                Parent = Graphics.SpriteScreen,
-                Location = Point.Zero,
-                Size = Graphics.SpriteScreen.Size
-            };
-            _singleton.Show();
+            if (_singleton != null) {
+                return;
+            }
+
+            _singleton = Activator.CreateInstance(typeof(TSelf), callback, text, defaultValue, confirmButtonText, cancelButtonText) as TSelf;
         }
 
         private void CreateButtons()
@@ -62,11 +79,11 @@ namespace Nekres.RotationTrainer.Core.Controls {
             {
                 _confirmButton = new StandardButton
                 {
-                    Parent = this,
-                    Text = _confirmButtonText,
-                    Size = _confirmButtonBounds.Size,
+                    Parent   = this,
+                    Text     = _confirmButtonText,
+                    Size     = _confirmButtonBounds.Size,
                     Location = _confirmButtonBounds.Location,
-                    Enabled = _defaultValue > 0
+                    Enabled  = TryParse(_defaultValue, out _)
                 };
                 _confirmButton.Click += (_, _) => this.Confirm();
             }
@@ -87,19 +104,15 @@ namespace Nekres.RotationTrainer.Core.Controls {
 
         private void Confirm()
         {
-            GameService.Input.Keyboard.KeyPressed -= OnKeyPressed;
             GameService.Content.PlaySoundEffectByName("button-click");
-            _callback(true, int.Parse(_inputTextBox.Text, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture));
-            _singleton = null;
+            _callback(true, this.TryParse(_inputTextBox.Text, out var result) ? result : default);
             this.Dispose();
         }
 
         private void Cancel()
         {
-            GameService.Input.Keyboard.KeyPressed -= OnKeyPressed;
             GameService.Content.PlaySoundEffectByName("button-click");
-            _callback(false, 0);
-            _singleton = null;
+            _callback(false, default(T));
             this.Dispose();
         }
 
@@ -119,23 +132,30 @@ namespace Nekres.RotationTrainer.Core.Controls {
 
         private void CreateTextInput()
         {
-            if (_inputTextBox != null) return;
-            var defaultText = _defaultValue > 0 ? _defaultValue.ToString() : string.Empty;
+            if (_inputTextBox != null) {
+                return;
+            }
+            string defaultText = TryParse(_defaultValue, out _) ? _defaultValue : string.Empty;
             _inputTextBox = new TextBox
             {
-                Parent = this,
-                Size = _inputTextBoxBounds.Size,
-                Location = _inputTextBoxBounds.Location,
-                Font = _font,
-                Focused = true,
-                HorizontalAlignment = HorizontalAlignment.Center,
-                Text = defaultText,
+                Parent      = this,
+                Size        = _inputTextBoxBounds.Size,
+                Location    = _inputTextBoxBounds.Location,
+                Font        = _font,
+                Focused     = true,
+                Text        = defaultText,
                 CursorIndex = defaultText.Length
             };
             _inputTextBox.TextChanged += (o, _) =>
             {
-                _confirmButton.Enabled = int.TryParse(((TextBox)o).Text, NumberStyles.Integer, CultureInfo.InvariantCulture, out int n) && n >= 0;
+                _confirmButton.Enabled = this.TryParse(((TextBox)o).Text, out var _);
             };
+        }
+
+        protected override void DisposeControl() {
+            GameService.Input.Keyboard.KeyPressed -= OnKeyPressed;
+            _singleton =  null;
+            base.DisposeControl();
         }
 
         public override void PaintBeforeChildren(SpriteBatch spriteBatch, Rectangle bounds)
