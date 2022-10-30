@@ -44,7 +44,7 @@ namespace Nekres.RotationTrainer.Core.UI.Models {
         {
             get => _title;
             set {
-                if (!string.IsNullOrEmpty(_title) && _title.Equals(value)) {
+                if (_title != null && _title.Equals(value)) {
                     return;
                 }
                 _title = value;
@@ -61,7 +61,7 @@ namespace Nekres.RotationTrainer.Core.UI.Models {
         { 
             get => _buildTemplate;
             set {
-                if (!string.IsNullOrEmpty(_buildTemplate) && _buildTemplate.Equals(value)) {
+                if (_buildTemplate != null && _buildTemplate.Equals(value)) {
                     return;
                 }
                 _buildTemplate = value;
@@ -83,8 +83,8 @@ namespace Nekres.RotationTrainer.Core.UI.Models {
                 _primaryWeaponSet = value;
                 Changed?.Invoke(this, EventArgs.Empty);
                 if (value != null) {
-                    value.Changed -= OnWeaponsChanged;
-                    value.Changed += OnWeaponsChanged;
+                    value.Changed -= OnBuildChanged;
+                    value.Changed += OnBuildChanged;
                 }
             }
         }
@@ -103,26 +103,30 @@ namespace Nekres.RotationTrainer.Core.UI.Models {
                 _secondaryWeaponSet = value;
                 Changed?.Invoke(this, EventArgs.Empty);
                 if (value != null) {
-                    value.Changed -= OnWeaponsChanged;
-                    value.Changed += OnWeaponsChanged;
+                    value.Changed -= OnBuildChanged;
+                    value.Changed += OnBuildChanged;
                 }
             }
         }
 
-        private string _rotation;
+        private BuildRotation _rotation;
         /// <summary>
         /// The rotation.
         /// </summary>
         [JsonProperty("rotation")]
-        public string Rotation 
+        public BuildRotation Rotation 
         { 
             get => _rotation;
             set {
-                if (!string.IsNullOrEmpty(_rotation) && _rotation.Equals(value)) {
+                if (_rotation != null && _rotation.Equals(value)) {
                     return;
                 }
                 _rotation = value;
                 Changed?.Invoke(this, EventArgs.Empty);
+                if (value != null) {
+                    value.Changed -= OnBuildChanged;
+                    value.Changed += OnBuildChanged;
+                }
             }
         }
 
@@ -152,13 +156,13 @@ namespace Nekres.RotationTrainer.Core.UI.Models {
             this.ModifiedDate  = modifiedDate;
             this.ClientBuildId = clientBuildId;
 
-            _title         = string.Empty;
+            _title = string.Empty;
 
             _buildTemplate    = string.Empty;
             _primaryWeaponSet   = new WeaponSet(SkillWeaponType.None, SkillWeaponType.None);
             _secondaryWeaponSet = new WeaponSet(SkillWeaponType.None, SkillWeaponType.None);
 
-            _rotation     = string.Empty;
+            _rotation     = new BuildRotation(string.Empty, string.Empty);
             _utilityOrder = new int[3] { 0, 1, 2 };
         }
 
@@ -187,7 +191,7 @@ namespace Nekres.RotationTrainer.Core.UI.Models {
             return TaskUtil.TryParseJson(json, out model);
         }
 
-        private void OnWeaponsChanged(object o, EventArgs e) {
+        private void OnBuildChanged(object o, EventArgs e) {
             Changed?.Invoke(this, EventArgs.Empty);
         }
 
@@ -203,6 +207,7 @@ namespace Nekres.RotationTrainer.Core.UI.Models {
                     if (_mainHand == value) {
                         return;
                     }
+                    _mainHand = value;
                     Changed?.Invoke(this, EventArgs.Empty);
                 }
             }
@@ -210,11 +215,12 @@ namespace Nekres.RotationTrainer.Core.UI.Models {
             private SkillWeaponType _offHand;
             [JsonProperty("offHand"), JsonConverter(typeof(StringEnumConverter))]
             public SkillWeaponType OffHand {
-                get => _mainHand;
+                get => _offHand;
                 set {
-                    if (_mainHand == value) {
+                    if (_offHand == value) {
                         return;
                     }
+                    _offHand = value;
                     Changed?.Invoke(this, EventArgs.Empty);
                 }
             }
@@ -222,6 +228,42 @@ namespace Nekres.RotationTrainer.Core.UI.Models {
             public WeaponSet(SkillWeaponType mainHand, SkillWeaponType offHand) {
                 _mainHand = mainHand;
                 _offHand = offHand;
+            }
+        }
+
+        public sealed class BuildRotation {
+
+            public event EventHandler<EventArgs> Changed;
+
+            private string _opener;
+            [JsonProperty("opener")]
+            public string Opener {
+                get => _opener;
+                set {
+                    if (_opener != null && _opener.Equals(value)) {
+                        return;
+                    }
+                    _opener = value;
+                    Changed?.Invoke(this, EventArgs.Empty);
+                }
+            }
+
+            private string _loop;
+            [JsonProperty("loop")]
+            public string Loop {
+                get => _loop;
+                set {
+                    if (_loop != null && _loop.Equals(value)) {
+                        return;
+                    }
+                    _loop = value;
+                    Changed?.Invoke(this, EventArgs.Empty);
+                }
+            }
+
+            public BuildRotation(string opener, string loop) {
+                _opener = opener;
+                _loop = loop;
             }
         }
     }

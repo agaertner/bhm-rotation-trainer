@@ -1,16 +1,10 @@
-﻿using System;
-using System.Collections.ObjectModel;
-using System.Linq;
-using Blish_HUD;
+﻿using Blish_HUD;
 using Blish_HUD.Controls;
 using Blish_HUD.Graphics.UI;
-using Blish_HUD.Input;
-using Gw2Sharp.ChatLinks;
-using Gw2Sharp.Models;
 using Microsoft.Xna.Framework;
 using Nekres.RotationTrainer.Core.UI.Controls;
 using Nekres.RotationTrainer.Core.UI.Models;
-using Nekres.RotationTrainer.Player.Models;
+using System;
 
 namespace Nekres.RotationTrainer.Core.UI.Views {
     internal class EditView : View<EditPrersenter> {
@@ -64,46 +58,34 @@ namespace Nekres.RotationTrainer.Core.UI.Views {
                 }, "Enter a Build Chat Link:", this.Presenter.Model.BuildTemplate);
             };
 
-            var rotationPanel = new FlowPanel {
-                Parent         = buildPanel,
-                Size           = new Point(buildPanel.ContentRegion.Width, buildPanel.ContentRegion.Height - 150),
-                Location       = new Point(0,                              professionLabel.Bottom          + MARGIN_BOTTOM),
-                ControlPadding = new Vector2(5, 5),
-                ShowBorder     = false,
-                CanScroll      = true,
-                ShowTint       = false
+            var rotationContainer = new ViewContainer {
+                Parent = buildPanel,
+                Width = buildPanel.ContentRegion.Width / 2 + 165,
+                Height = buildPanel.ContentRegion.Height,
+                Top = professionLabel.Bottom + MARGIN_BOTTOM,
+                Left = 0
+            };
+            rotationContainer.Show(new RotationView(this.Presenter.Model.Rotation));
+
+            var configContainer = new ViewContainer {
+                Parent = buildPanel,
+                Width  = buildPanel.ContentRegion.Width / 2 - 170,
+                Height = buildPanel.ContentRegion.Height,
+                Left   = rotationContainer.Right + 5,
+                Top    = rotationContainer.Top,
+                ShowTint = true,
+                ShowBorder = true
             };
 
-            if (Rotation.TryParse(this.Presenter.Model.Rotation, out var rotation)) {
+            var configView = new ConfigView(this.Presenter.Model);
+            configView.DeleteClick += OnDeleteClick;
+            configContainer.Show(configView);
+        }
 
-                int i = 1;
-                foreach (var ability in rotation) {
-                    var abilityDetails = new ViewContainer {
-                        Parent = rotationPanel,
-                        Width = rotationPanel.Width - 13,
-                        Height = 35,
-                        ShowTint = true
-                    };
-
-                    abilityDetails.Show(new AbilityDetailsView(ability, i++));
-                }
-                rotation.Changed += OnRotationChanged;
-            }
-
-            var utilRemapper = new UtilityRemapper(this.Presenter.Model.UtilityOrder.ToArray()) {
-                Parent   = buildPanel,
-                Location = new Point(0, rotationPanel.Bottom + MARGIN_BOTTOM)
-            };
-            utilRemapper.Reordered += OnUtilitiesReordered;
-
-            // Delete button
-            var delBtn = new DeleteButton(RotationTrainerModule.Instance.ContentsManager) {
-                Parent           = buildPanel,
-                Size             = new Point(42, 42),
-                Location         = new Point(buildPanel.ContentRegion.Width - 42, rotationPanel.Bottom + MARGIN_BOTTOM),
-                BasicTooltipText = "Delete"
-            };
-            delBtn.Click += DeleteButton_Click;
+        private void OnDeleteClick(object o, EventArgs e) {
+            _deleted = true;
+            this.Presenter.Delete();
+            ((DeleteButton)o).Parent.Parent.Hide();
         }
 
         private void EditTitle_InputFocusChanged(object o, EventArgs e) {
@@ -113,26 +95,6 @@ namespace Nekres.RotationTrainer.Core.UI.Views {
             }
             this.Presenter.Model.Title          = ctrl.Text;
             ((StandardWindow)ctrl.Parent).Title = $"Edit Template - {ctrl.Text}";
-        }
-
-        private void DeleteButton_Click(object o, MouseEventArgs e) {
-            _deleted = true;
-            this.Presenter.Delete();
-            ((DeleteButton)o).Parent.Hide();
-        }
-
-        private void OnUtilitiesReordered(object o, ValueEventArgs<int[]> e) {
-            this.Presenter.Model.UtilityOrder = e.Value;
-        }
-
-        private void OnRotationChanged(object o, EventArgs e) {
-            var rot = ((Rotation)o).ToString();
-            if (!Rotation.TryParse(rot, out _)) {
-                ScreenNotification.ShowNotification("Something went wrong.", ScreenNotification.NotificationType.Error);
-                RotationTrainerModule.Logger.Debug($"Unable to deserialize rotation: {rot}");
-                return;
-            }
-            this.Presenter.Model.Rotation = rot;
         }
 
         protected override void Unload() {

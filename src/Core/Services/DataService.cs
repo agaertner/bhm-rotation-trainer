@@ -31,7 +31,7 @@ namespace Nekres.RotationTrainer.Core.Services {
                 BuildTemplate    = "[&DQQePSA2SBd5AAAAARsAALYAAAC/AAAAwAAAAD0AAAAAAAAAAAAAAAAAAAA=]",
                 PrimaryWeaponSet   = new TemplateModel.WeaponSet(SkillWeaponType.Axe, SkillWeaponType.Axe),
                 SecondaryWeaponSet = new TemplateModel.WeaponSet(SkillWeaponType.None, SkillWeaponType.None),
-                Rotation         = "2 3 4 u1 1/4000 2 3 elite 4 u2 1/4000 2 heal"
+                Rotation         = new TemplateModel.BuildRotation("1 2 3", "2 3 4 u1 1/4000 2 3 elite 4 u2 1/4000 2 heal")
             });
         }
 
@@ -44,7 +44,8 @@ namespace Nekres.RotationTrainer.Core.Services {
                 GameService.Content.PlaySoundEffectByName("color-change");
             } else {
                 e.Title                   = model.Title;
-                e.Rotation                = model.Rotation;
+                e.RotationOpener          = model.Rotation.Opener;
+                e.RotationLoop            = model.Rotation.Loop;
                 e.BuildTemplate           = model.BuildTemplate;
                 e.PrimaryWeaponMainHand   = model.PrimaryWeaponSet.MainHand;
                 e.PrimaryWeaponOffHand    = model.PrimaryWeaponSet.OffHand;

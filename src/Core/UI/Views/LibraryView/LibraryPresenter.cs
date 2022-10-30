@@ -46,7 +46,7 @@ namespace Nekres.RotationTrainer.Core.UI.Views {
                 BottomText = name
             };
             button.PlayClick += delegate {
-                if (!Rotation.TryParse(model.Rotation, out var rotation)) {
+                if (!Rotation.TryParse(model.Rotation.Loop, out var rotation)) {
                     ScreenNotification.ShowNotification("Unable to play rotation.", ScreenNotification.NotificationType.Error);
                     return;
                 }

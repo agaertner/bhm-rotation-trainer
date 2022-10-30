@@ -3,7 +3,6 @@ using LiteDB;
 using Nekres.RotationTrainer.Core.UI.Models;
 using System;
 using System.Linq;
-using Blish_HUD;
 
 namespace Nekres.RotationTrainer.Core.Services.Persistance {
     internal class TemplateEntity
@@ -12,13 +11,13 @@ namespace Nekres.RotationTrainer.Core.Services.Persistance {
         /// Unique identifier of this build.
         /// </summary>
         [BsonId(true)]
-        public Guid Id { get; }
+        public Guid Id { get; set; }
 
         /// <summary>
         /// Indicates when this entity has been created (UTC).
         /// </summary>
         [BsonField("CreationDate")]
-        public DateTime CreationDate { get; }
+        public DateTime CreationDate { get; set; }
 
         /// <summary>
         /// Indicates when this entity was last modified (UTC).
@@ -27,10 +26,10 @@ namespace Nekres.RotationTrainer.Core.Services.Persistance {
         public DateTime ModifiedDate { get; set; }
 
         /// <summary>
-        /// The Guild Wars 2 client build id.
+        /// Guild Wars 2 client build id with which this entity was created.
         /// </summary>
         [BsonField("BuildId")]
-        public int ClientBuildId { get; }
+        public int ClientBuildId { get; set; }
 
         /// <summary>
         /// Custom title of this build.
@@ -69,10 +68,16 @@ namespace Nekres.RotationTrainer.Core.Services.Persistance {
         public SkillWeaponType SecondaryWeaponOffHand { get; set; }
 
         /// <summary>
-        /// The rotation.
+        /// Opener of the rotation.
         /// </summary>
-        [BsonField("Rotation")] 
-        public string Rotation { get; set; }
+        [BsonField("RotationOpener")]
+        public string RotationOpener { get; set; }
+
+        /// <summary>
+        /// Loop of the rotation.
+        /// </summary>
+        [BsonField("RotationLoop")] 
+        public string RotationLoop { get; set; }
 
         /// <summary>
         /// Remappings of the order of utility keys in the <see cref="BuildTemplate"/>. 
@@ -80,18 +85,19 @@ namespace Nekres.RotationTrainer.Core.Services.Persistance {
         /// <remarks>
         /// Each index represents a utility skill from left to right. Values represent the reordering.
         /// </remarks>
-        [BsonField("UtilityOrder")] 
+        [BsonField("UtilityOrder")]
         public int[] UtilityOrder { get; set; }
 
         public TemplateEntity() : this(Guid.NewGuid(), DateTime.UtcNow, DateTime.UtcNow, 0, 
                                        string.Empty, string.Empty, SkillWeaponType.None, SkillWeaponType.None,
-                                       SkillWeaponType.None, SkillWeaponType.None, string.Empty, new [] {0,1,2}) {
+                                       SkillWeaponType.None, SkillWeaponType.None, string.Empty, string.Empty, new [] {0,1,2}) {
             /* NOOP */
         }
 
         public TemplateEntity(Guid id, DateTime creationDate, DateTime modifiedDate, int clientBuildId, string title, string buildTemplate, 
                               SkillWeaponType primaryWeaponMainHand,   SkillWeaponType primaryWeaponOffHand, 
-                              SkillWeaponType secondaryWeaponMainHand, SkillWeaponType secondaryWeaponOffHand, string rotation, int[] utilityOrder) {
+                              SkillWeaponType secondaryWeaponMainHand, SkillWeaponType secondaryWeaponOffHand, 
+                              string rotationOpener, string rotationLoop, int[] utilityOrder) {
             this.Id           = id;
             this.CreationDate = creationDate;
             this.ModifiedDate = modifiedDate;
@@ -105,8 +111,9 @@ namespace Nekres.RotationTrainer.Core.Services.Persistance {
             this.SecondaryWeaponMainHand = secondaryWeaponMainHand;
             this.SecondaryWeaponOffHand = secondaryWeaponOffHand;
 
-            this.Rotation     = rotation;
-            this.UtilityOrder = utilityOrder;
+            this.RotationOpener = rotationOpener;
+            this.RotationLoop   = rotationLoop;
+            this.UtilityOrder   = utilityOrder;
         }
 
         public TemplateModel ToModel() {
@@ -114,18 +121,18 @@ namespace Nekres.RotationTrainer.Core.Services.Persistance {
                 Title         = this.Title,
 
                 BuildTemplate    = this.BuildTemplate,
-                PrimaryWeaponSet   = new TemplateModel.WeaponSet(SkillWeaponType.None, SkillWeaponType.None),
-                SecondaryWeaponSet = new TemplateModel.WeaponSet(SkillWeaponType.None, SkillWeaponType.None),
+                PrimaryWeaponSet   = new TemplateModel.WeaponSet(this.PrimaryWeaponMainHand, this.PrimaryWeaponOffHand),
+                SecondaryWeaponSet = new TemplateModel.WeaponSet(this.SecondaryWeaponMainHand, this.SecondaryWeaponOffHand),
 
-                Rotation      = this.Rotation,
-                UtilityOrder  = this.UtilityOrder,
+                Rotation     = new TemplateModel.BuildRotation(this.RotationOpener, this.RotationLoop),
+                UtilityOrder = this.UtilityOrder,
             };
         }
 
         public static TemplateEntity FromModel(TemplateModel model) {
             return new TemplateEntity(model.Id, model.CreationDate, model.ModifiedDate, model.ClientBuildId,
                                       model.Title, model.BuildTemplate, model.PrimaryWeaponSet.MainHand, model.PrimaryWeaponSet.OffHand, 
-                                      model.SecondaryWeaponSet.MainHand, model.SecondaryWeaponSet.OffHand, model.Rotation, model.UtilityOrder.ToArray());
+                                      model.SecondaryWeaponSet.MainHand, model.SecondaryWeaponSet.OffHand, model.Rotation.Opener, model.Rotation.Loop, model.UtilityOrder.ToArray());
         }
     }
 }
