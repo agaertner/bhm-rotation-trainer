@@ -87,7 +87,7 @@ namespace Nekres.RotationTrainer.Player.Models {
             string str = "[";
 
             if (!string.IsNullOrEmpty(this.Message)) {
-                str += $"{this.Message}";
+                str += this.Message ?? string.Empty;
             }
 
             str += "](";

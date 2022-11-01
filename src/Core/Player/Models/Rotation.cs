@@ -5,9 +5,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
-using SharpDX.XAudio2;
 
 namespace Nekres.RotationTrainer.Player.Models {
     public enum GuildWarsAction {
@@ -34,7 +32,7 @@ namespace Nekres.RotationTrainer.Player.Models {
     }
     internal class Rotation : IEnumerable<Ability> {
         private const string DELIMITER = "╡\t╞";
-        private static Regex _syntaxPattern = new Regex(@"\[(?<message>.*?)\]\((?<action>[^\*\/]+)(\*(?<repetitions>[1-9]{1}[0-9]*))?(\/(?<duration>[1-9]{1}[0-9]*))?\)", RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture | RegexOptions.Singleline);
+        private static Regex _syntaxPattern = new Regex(@"\[(?<message>.*?)\]\((?<action>[^\*\/]+)(\*(?<repetitions>[1-9]{1}[0-9]*))?(\/(?<duration>[1-9]{1}[0-9]*))?\)", RegexOptions.ExplicitCapture | RegexOptions.Singleline);
         private static Dictionary<string, GuildWarsAction> _map = new() {
             {"swap", GuildWarsAction.SwapWeapons},
             {"drop", GuildWarsAction.SwapWeapons},
@@ -121,9 +119,7 @@ namespace Nekres.RotationTrainer.Player.Models {
 
             string[] actions = rawRotation.Split(new []{ DELIMITER }, StringSplitOptions.None);
 
-            foreach (string s in actions) {
-
-                string expression  = s.ToLowerInvariant();
+            foreach (string expression in actions) {
 
                 string message     = string.Empty;
                 var    action      = GuildWarsAction.None;
