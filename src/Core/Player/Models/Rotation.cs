@@ -5,7 +5,9 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
+using SharpDX.XAudio2;
 
 namespace Nekres.RotationTrainer.Player.Models {
     public enum GuildWarsAction {
@@ -31,7 +33,7 @@ namespace Nekres.RotationTrainer.Player.Models {
         Interact
     }
     internal class Rotation : IEnumerable<Ability> {
-        private static Regex _syntaxPattern = new Regex(@"(?<repetitions>(?<=\*)[1-9]{1}[0-9]*)|(?<duration>(?<=\/)[1-9]{1}[0-9]*)|(?<action>^[^\*\/]+)", RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture | RegexOptions.Singleline);
+        private static Regex _syntaxPattern = new Regex(@"\[(?<message>.*?)\]\((?<action>[^\*\/]+)(\*(?<repetitions>[1-9]{1}[0-9]*))?(\/(?<duration>[1-9]{1}[0-9]*))?\)", RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture | RegexOptions.Singleline);
         private static Dictionary<string, GuildWarsAction> _map = new() {
             {"swap", GuildWarsAction.SwapWeapons},
             {"drop", GuildWarsAction.SwapWeapons},
@@ -81,6 +83,10 @@ namespace Nekres.RotationTrainer.Player.Models {
         
         private ObservableCollection<Ability> _abilities;
 
+        public Rotation() : this(new List<Ability>()){
+            /* NOOP */
+        }
+
         public Rotation(IEnumerable<Ability> abilities) {
             _abilities                   =  new ObservableCollection<Ability>(abilities);
             _abilities.CollectionChanged += OnAbilitiesChanged;
@@ -117,13 +123,19 @@ namespace Nekres.RotationTrainer.Player.Models {
             foreach (string s in actions) {
 
                 string expression  = s.ToLowerInvariant();
+
+                string message     = string.Empty;
+                var    action      = GuildWarsAction.None;
                 int    duration    = 0;
                 int    repetitions = 0;
-                var    action      = GuildWarsAction.None;
 
                 var matchCollection = _syntaxPattern.Matches(expression);
 
                 foreach (Match match in matchCollection) {
+                    if (match.Groups["message"].Success) {
+                        message = match.Groups["message"].Value;
+                    }
+
                     if (match.Groups["action"].Success && !_map.TryGetValue(match.Groups["action"].Value, out action)) {
                         ScreenNotification.ShowNotification($"The action \"{match.Groups["action"].Value}\" doesn't exist.");
                         return false;
@@ -150,7 +162,7 @@ namespace Nekres.RotationTrainer.Player.Models {
                 }
 
                 // Add ability to rotation
-                abilities.Add(new Ability(action, duration, repetitions));
+                abilities.Add(new Ability(action, duration, repetitions, message));
             }
 
             rotation = new Rotation(abilities);
@@ -165,12 +177,29 @@ namespace Nekres.RotationTrainer.Player.Models {
             return GetEnumerator();
         }
 
+        public Ability this[int i] => _abilities[i];
+
+        public bool Remove(Ability ability) {
+            return _abilities.Remove(ability);
+        }
+
+        public void RemoveAt(int index) {
+            _abilities.RemoveAt(index);
+        }
+
+        public void Insert(int index, Ability ability) {
+            _abilities.Insert(index, ability);
+        }
+
+        public void Add(Ability ability) {
+            _abilities.Add(ability);
+        }
+
         public override string ToString() {
             if (!_abilities.Any()) {
-                return base.ToString();
+                return string.Empty;
             }
             return string.Join(" ", _abilities.Select(x => x.ToString()));
         }
-
     }
 }

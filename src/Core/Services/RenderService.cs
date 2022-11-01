@@ -1,18 +1,14 @@
 ﻿using Blish_HUD;
+using Blish_HUD.Content;
 using Gw2Sharp.Models;
 using Gw2Sharp.WebApi.Exceptions;
-using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Blish_HUD.Content;
-using Gw2Sharp.ChatLinks;
-using Nekres.RotationTrainer.Player.Models;
 
-namespace Nekres.RotationTrainer.Core.Services
-{
+namespace Nekres.RotationTrainer.Core.Services {
     internal class RenderService : IDisposable
     {
         public event EventHandler<ValueEventArgs<bool>> LoadingChanged;
@@ -63,12 +59,12 @@ namespace Nekres.RotationTrainer.Core.Services
             _loadingIndicator.Report(null);
         }
 
-        public Texture2D GetProfessionRender(ProfessionType professionType)
+        public AsyncTexture2D GetProfessionRender(ProfessionType professionType)
         {
-            return _professionRenderRepository.TryGetValue(professionType, out var tex) ? tex : ContentService.Textures.Pixel;
+            return _professionRenderRepository.TryGetValue(professionType, out var tex) ? tex : ContentService.Textures.TransparentPixel;
         }
 
-        public Texture2D GetEliteRender(int specId)
+        public AsyncTexture2D GetEliteRender(int specId)
         {
             if (_eliteRenderRepository.TryGetValue(specId, out var tex))
             {

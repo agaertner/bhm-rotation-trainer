@@ -1,4 +1,5 @@
-﻿using Blish_HUD.Controls;
+﻿using Blish_HUD;
+using Blish_HUD.Controls;
 using Blish_HUD.Input;
 using Blish_HUD.Modules.Managers;
 using Microsoft.Xna.Framework.Graphics;
@@ -15,6 +16,11 @@ namespace Nekres.RotationTrainer.Core.UI.Controls
             _deleteIcon ??= content.GetTexture("trashcanClosed_icon_64x64.png");
             _deleteIconHover ??= content.GetTexture("trashcanOpen_icon_64x64.png");
             this.Texture = _deleteIcon;
+        }
+
+        protected override void OnClick(MouseEventArgs e) {
+            GameService.Content.PlaySoundEffectByName("button-click");
+            base.OnClick(e);
         }
 
         protected override void OnMouseEntered(MouseEventArgs e)

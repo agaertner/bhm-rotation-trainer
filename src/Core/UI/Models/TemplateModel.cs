@@ -1,10 +1,12 @@
 ﻿using Blish_HUD;
 using Gw2Sharp.ChatLinks;
 using Gw2Sharp.WebApi.V2.Models;
+using Nekres.RotationTrainer.Player.Models;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using System;
 using System.Linq;
-using Newtonsoft.Json.Converters;
+using System.Text;
 
 namespace Nekres.RotationTrainer.Core.UI.Models {
     internal class TemplateModel 
@@ -183,12 +185,34 @@ namespace Nekres.RotationTrainer.Core.UI.Models {
         }
 
         public override string ToString() {
-            return Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(this, new StringEnumConverter())));
+            return $"[&{Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(this, new StringEnumConverter())))}]";
         }
 
         public static bool TryParse(string code, out TemplateModel model) {
-            string json = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(code));
-            return TaskUtil.TryParseJson(json, out model);
+            if (string.IsNullOrEmpty(code)) {
+                model = null;
+                return false;
+            }
+
+            if (code.StartsWith("[", StringComparison.OrdinalIgnoreCase)) {
+                code = code.Substring(1);
+            }
+
+            if (code.StartsWith("&", StringComparison.OrdinalIgnoreCase)) {
+                code = code.Substring(1);
+            }
+
+            if (code.EndsWith("]", StringComparison.OrdinalIgnoreCase)) {
+                code = code.Remove(code.Length - 1);
+            }
+
+            try {
+                string json = Encoding.UTF8.GetString(Convert.FromBase64String(code));
+                return TaskUtil.TryParseJson(json, out model);
+            } catch (Exception e) when (e is ArgumentException or FormatException) {
+                model = null;
+                return false;
+            }
         }
 
         private void OnBuildChanged(object o, EventArgs e) {
@@ -235,9 +259,9 @@ namespace Nekres.RotationTrainer.Core.UI.Models {
 
             public event EventHandler<EventArgs> Changed;
 
-            private string _opener;
+            private Rotation _opener;
             [JsonProperty("opener")]
-            public string Opener {
+            public Rotation Opener {
                 get => _opener;
                 set {
                     if (_opener != null && _opener.Equals(value)) {
@@ -245,12 +269,16 @@ namespace Nekres.RotationTrainer.Core.UI.Models {
                     }
                     _opener = value;
                     Changed?.Invoke(this, EventArgs.Empty);
+
+                    if (value != null) {
+                        value.Changed += OnRotationChanged;
+                    }
                 }
             }
 
-            private string _loop;
+            private Rotation _loop;
             [JsonProperty("loop")]
-            public string Loop {
+            public Rotation Loop {
                 get => _loop;
                 set {
                     if (_loop != null && _loop.Equals(value)) {
@@ -258,13 +286,22 @@ namespace Nekres.RotationTrainer.Core.UI.Models {
                     }
                     _loop = value;
                     Changed?.Invoke(this, EventArgs.Empty);
+
+                    if (value != null) {
+                        value.Changed += OnRotationChanged;
+                    }
                 }
             }
 
             public BuildRotation(string opener, string loop) {
-                _opener = opener;
-                _loop = loop;
+                _opener = Player.Models.Rotation.TryParse(opener, out var o) ? o : new Rotation();
+                _loop = Player.Models.Rotation.TryParse(loop, out var l) ? l : new Rotation();
             }
+
+            private void OnRotationChanged(object sender, EventArgs e) {
+                Changed?.Invoke(this, EventArgs.Empty);
+            }
+
         }
     }
 }

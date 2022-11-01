@@ -12,10 +12,11 @@ namespace Nekres.RotationTrainer.Core.UI.Views {
     internal class LibraryView : View<LibraryPresenter>
     {
         internal event EventHandler<EventArgs> AddNewClick;
+        internal event EventHandler<EventArgs> ImportFromClipboardClick;
 
-        private const int    MARGIN_BOTTOM = 10;
-        private const string FILTER_ALL    = "All";
-        private const string FILTER_BUILD_ID   = "Game Version";
+        private const int                      MARGIN_BOTTOM   = 10;
+        private const string                   FILTER_ALL      = "All";
+        private const string                   FILTER_BUILD_ID = "Game Version";
 
         public FlowPanel TemplatePanel;
 
@@ -79,11 +80,21 @@ namespace Nekres.RotationTrainer.Core.UI.Views {
 
             var btnAddNew = new StandardButton {
                 Parent   = buildPanel,
-                Location = new Point((buildPanel.ContentRegion.Width - 100) / 2, this.TemplatePanel.Bottom + MARGIN_BOTTOM),
-                Size     = new Point(100,                                        35),
+                Location = new Point((buildPanel.ContentRegion.Width - 290) / 2, this.TemplatePanel.Bottom + MARGIN_BOTTOM),
+                Size     = new Point(145,                                        35),
                 Text     = "Add Template"
             };
             btnAddNew.Click += BtnAddNew_Click;
+
+            var btnFromClipboard = new StandardButton {
+                Parent = buildPanel,
+                Width = btnAddNew.Width,
+                Height = 35,
+                Left = btnAddNew.Right + 5,
+                Top = btnAddNew.Top,
+                Text = "Import from Clipboard"
+            };
+            btnFromClipboard.Click += BtnFromClipboard_Click;
 
             foreach (var template in this.Presenter.Model.TemplateModels)
             {
@@ -95,6 +106,10 @@ namespace Nekres.RotationTrainer.Core.UI.Views {
 
         private void BtnAddNew_Click(object o, MouseEventArgs e) {
             AddNewClick?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void BtnFromClipboard_Click(object o, MouseEventArgs e) {
+            ImportFromClipboardClick?.Invoke(this, EventArgs.Empty);
         }
 
         private void OnSearchFilterChanged(object o, EventArgs e) {

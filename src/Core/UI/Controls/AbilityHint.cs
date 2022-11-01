@@ -100,11 +100,13 @@ namespace Nekres.RotationTrainer.Core.UI.Controls {
         }
 
         protected override CaptureType CapturesInput() {
-            return CaptureType.None;
+            return CaptureType.Filter;
         }
 
         protected override void DisposeControl() {
-            _keyBinding.Activated -= OnActivated;
+            if (_keyBinding != null) {
+                _keyBinding.Activated -= OnActivated;
+            }
             _timer?.Stop();
             _arrowTween?.CancelAndComplete();
             base.DisposeControl();
@@ -117,14 +119,22 @@ namespace Nekres.RotationTrainer.Core.UI.Controls {
 
             this.Completed = _timer.Elapsed.TotalMilliseconds >= _ability.Duration && _remReqActivations <= 0;
 
-            var frameDest = new Rectangle(this.Width / 2 + _bounds.X - _bounds.Width / 2, this.Height - _bounds.Y   - _bounds.Height, _bounds.Width, _bounds.Height);
-            var arrowDest = new Rectangle(frameDest.X,                                              frameDest.Y - frameDest.Height - _arrowHeight,        frameDest.Width,    frameDest.Height);
-            
+            var frameDest = new Rectangle(this.Width / 2 + _bounds.X - _bounds.Width / 2, this.Height - _bounds.Y - _bounds.Height, _bounds.Width, _bounds.Height);
+            var arrowDest = new Rectangle(frameDest.X, frameDest.Y - frameDest.Height - _arrowHeight, frameDest.Width, frameDest.Height);
+
+            int textOffsetY = 0;
+
             if (string.IsNullOrEmpty(_text)) {
                 spriteBatch.DrawOnCtrl(this, _frame, frameDest, Color.Red);
             } else {
+                var textSize = _font.MeasureString(_text);
+                textOffsetY = (int)textSize.Height + _font.LineHeight;
+                spriteBatch.DrawStringOnCtrl(this, _text, _font, new Rectangle(arrowDest.X + (arrowDest.Width - (int)textSize.Width) / 2, arrowDest.Y - arrowDest.Height, (int)textSize.Width, arrowDest.Height), Color.White, false, true, 1, HorizontalAlignment.Center);
+            }
+
+            if (!string.IsNullOrEmpty(_ability.Message)) {
                 var textWidth = (int)_font.MeasureString(_text).Width;
-                spriteBatch.DrawStringOnCtrl(this, _text, _font, new Rectangle(arrowDest.X + (arrowDest.Width - textWidth) / 2, arrowDest.Y - arrowDest.Height, textWidth, arrowDest.Height), Color.White, false, true);
+                spriteBatch.DrawStringOnCtrl(this, _ability.Message, _font, new Rectangle(arrowDest.X + (arrowDest.Width - textWidth) / 2, arrowDest.Y - arrowDest.Height - textOffsetY, textWidth, arrowDest.Height), Color.White, false, true, 1, HorizontalAlignment.Center);
             }
 
             spriteBatch.DrawOnCtrl(this, _arrow, arrowDest, Color.Red);

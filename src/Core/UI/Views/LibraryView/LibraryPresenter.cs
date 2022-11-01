@@ -8,30 +8,48 @@ using Nekres.RotationTrainer.Core.UI.Controls;
 using Nekres.RotationTrainer.Core.UI.Models;
 using Nekres.RotationTrainer.Player.Models;
 using System;
+using Blish_HUD.Content;
 
 namespace Nekres.RotationTrainer.Core.UI.Views {
     internal class LibraryPresenter : Presenter<LibraryView, LibraryModel>
     {
         public LibraryPresenter(LibraryView view, LibraryModel model) : base(view, model) {
-            model.TemplateModels = RotationTrainerModule.Instance.DataService.FindAll();
-            this.View.AddNewClick += OnAddNewClicked;
+            model.TemplateModels               =  RotationTrainerModule.Instance.DataService.FindAll();
+            this.View.AddNewClick              += OnAddNewClicked;
+            this.View.ImportFromClipboardClick += OnImportFromClipboardClicked;
+        }
+
+        protected override void Unload() {
+            this.View.AddNewClick              -= OnAddNewClicked;
+            this.View.ImportFromClipboardClick -= OnImportFromClipboardClicked;
+            base.Unload();
+        }
+
+        private async void OnImportFromClipboardClicked(object o, EventArgs e) {
+            var code = await ClipboardUtil.WindowsClipboardService.GetTextAsync();
+            if (!TemplateModel.TryParse(code, out var model)) {
+                GameService.Content.PlaySoundEffectByName("error");
+                ScreenNotification.ShowNotification("Your clipboard does not contain a valid template.", ScreenNotification.NotificationType.Error);
+                return;
+            }
+            this.AddTemplate(model);
+            RotationTrainerModule.Instance.DataService.Upsert(model);
         }
 
         private void OnAddNewClicked(object o, EventArgs e) {
             var model = new TemplateModel();
-            this.AddTemplate(model, true);
+            this.AddTemplate(model);
             RotationTrainerModule.Instance.DataService.Upsert(model);
         }
 
-        internal void AddTemplate(TemplateModel model, bool isNew = false) {
-            Texture2D tex  = ContentService.Textures.Pixel;
+        internal void AddTemplate(TemplateModel model, AsyncTexture2D icon = null) {
             string    name = string.Empty;
 
-            if (!isNew && model.TryGetBuildChatLink(out var build)) {
+            if (model.TryGetBuildChatLink(out var build)) {
                 var prof    = build.Profession;
                 var elite   = build.Specialization3Id;
                 var isElite = RotationTrainerModule.Instance.RenderService.IsEliteSpec(elite); 
-                tex = isElite ? RotationTrainerModule.Instance.RenderService.GetEliteRender(elite) 
+                icon = isElite ? RotationTrainerModule.Instance.RenderService.GetEliteRender(elite) 
                           : RotationTrainerModule.Instance.RenderService.GetProfessionRender(prof); 
                 name = isElite ? RotationTrainerModule.Instance.RenderService.GetEliteSpecName(elite)
                                : RotationTrainerModule.Instance.RenderService.GetProfessionName(prof);
@@ -40,17 +58,13 @@ namespace Nekres.RotationTrainer.Core.UI.Views {
             var button = new TemplateButton(model) {
                 Parent = this.View.TemplatePanel,
                 Size   = new Point(345, 100),
-                Icon       = tex,
+                Icon       = icon ?? ContentService.Textures.TransparentPixel,
                 IconSize   = DetailsIconSize.Small,
                 Text       = model.Title,
                 BottomText = name
             };
             button.PlayClick += delegate {
-                if (!Rotation.TryParse(model.Rotation.Loop, out var rotation)) {
-                    ScreenNotification.ShowNotification("Unable to play rotation.", ScreenNotification.NotificationType.Error);
-                    return;
-                }
-                RotationTrainerModule.Instance.TemplatePlayer.Play(rotation);
+                RotationTrainerModule.Instance.TemplatePlayer.Play(model.Rotation);
             };
             button.EditClick += OnEditMacroClicked;
         }

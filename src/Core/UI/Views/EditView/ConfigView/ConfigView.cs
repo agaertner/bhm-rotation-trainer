@@ -59,7 +59,7 @@ namespace Nekres.RotationTrainer.Core.UI.Views {
         }
 
         private void DeleteButton_Click(object o, MouseEventArgs e) {
-            DeleteClick?.Invoke(this, EventArgs.Empty);
+            DeleteClick?.Invoke(o, EventArgs.Empty);
         }
 
         private void OnUtilitiesReordered(object o, ValueEventArgs<int[]> e) {

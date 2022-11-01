@@ -132,7 +132,7 @@ namespace Nekres.RotationTrainer.Core.Services.Persistance {
         public static TemplateEntity FromModel(TemplateModel model) {
             return new TemplateEntity(model.Id, model.CreationDate, model.ModifiedDate, model.ClientBuildId,
                                       model.Title, model.BuildTemplate, model.PrimaryWeaponSet.MainHand, model.PrimaryWeaponSet.OffHand, 
-                                      model.SecondaryWeaponSet.MainHand, model.SecondaryWeaponSet.OffHand, model.Rotation.Opener, model.Rotation.Loop, model.UtilityOrder.ToArray());
+                                      model.SecondaryWeaponSet.MainHand, model.SecondaryWeaponSet.OffHand, model.Rotation.Opener.ToString(), model.Rotation.Loop.ToString(), model.UtilityOrder.ToArray());
         }
     }
 }

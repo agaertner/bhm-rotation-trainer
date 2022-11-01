@@ -63,22 +63,50 @@ namespace Nekres.RotationTrainer.Player.Models {
             }
         }
 
-        public Ability(GuildWarsAction action, int duration = 0, int repetitions = 0) {
+        private string _message;
+        public string Message {
+            get => _message;
+            set {
+                if (_message != null && _message.Equals(value)) {
+                    return;
+                }
+                _message = value;
+                Changed?.Invoke(this, EventArgs.Empty);
+            }
+        }
+
+        public Ability(GuildWarsAction action, int duration = 0, int repetitions = 0, string message = "") {
             _action = action;
             _duration = duration;
             _repetitions = repetitions;
+            _message = message;
         }
 
         public override string ToString() {
-            if (!_map.TryGetValue(this.Action, out string str)) {
-                return base.ToString();
+
+            string str = "[";
+
+            if (!string.IsNullOrEmpty(this.Message)) {
+                str += $"{this.Message}";
             }
+
+            str += "](";
+
+            if (!_map.TryGetValue(this.Action, out string action)) {
+                return string.Empty;
+            }
+
+            str += action;
+
             if (this.Repetitions > 0) {
                 str += $"*{this.Repetitions}";
             }
+
             if (this.Duration > 0) {
                 str += $"/{this.Duration}";
             }
+
+            str += ')';
             return str;
         }
 

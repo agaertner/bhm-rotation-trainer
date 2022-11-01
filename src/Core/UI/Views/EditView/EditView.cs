@@ -46,6 +46,8 @@ namespace Nekres.RotationTrainer.Core.UI.Views {
                 Location            = new Point(templateButton.Right + 5, templateButton.Top),
                 Font                = GameService.Content.GetFont(ContentService.FontFace.Menomonia, ContentService.FontSize.Size24, ContentService.FontStyle.Regular),
                 HorizontalAlignment = HorizontalAlignment.Left,
+                StrokeText = true,
+                ShowShadow = true,
                 Text                = professionText
             };
 
@@ -54,13 +56,14 @@ namespace Nekres.RotationTrainer.Core.UI.Views {
                     if (!confirmed) {
                         return;
                     }
-                    this.Presenter.Model.BuildTemplate = $"{link.Profession} Build"; ;
+                    this.Presenter.Model.BuildTemplate = link.ToString();
+                    professionLabel.Text               = $"{link.Profession} Build";
                 }, "Enter a Build Chat Link:", this.Presenter.Model.BuildTemplate);
             };
 
             var rotationContainer = new ViewContainer {
                 Parent = buildPanel,
-                Width = buildPanel.ContentRegion.Width / 2 + 165,
+                Width = buildPanel.ContentRegion.Width / 2 + 190,
                 Height = buildPanel.ContentRegion.Height,
                 Top = professionLabel.Bottom + MARGIN_BOTTOM,
                 Left = 0
@@ -69,7 +72,7 @@ namespace Nekres.RotationTrainer.Core.UI.Views {
 
             var configContainer = new ViewContainer {
                 Parent = buildPanel,
-                Width  = buildPanel.ContentRegion.Width / 2 - 170,
+                Width  = buildPanel.ContentRegion.Width / 2 - 195,
                 Height = buildPanel.ContentRegion.Height,
                 Left   = rotationContainer.Right + 5,
                 Top    = rotationContainer.Top,
@@ -85,7 +88,7 @@ namespace Nekres.RotationTrainer.Core.UI.Views {
         private void OnDeleteClick(object o, EventArgs e) {
             _deleted = true;
             this.Presenter.Delete();
-            ((DeleteButton)o).Parent.Parent.Hide();
+            ((DeleteButton)o).Parent.Parent.Parent.Hide();
         }
 
         private void EditTitle_InputFocusChanged(object o, EventArgs e) {

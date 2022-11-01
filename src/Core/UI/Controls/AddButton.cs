@@ -6,18 +6,18 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Nekres.RotationTrainer.Core.UI.Controls
 {
-    internal class RemoveButton : Image
+    internal class AddButton : Image
     {
         private static Texture2D _icon;
         private static Texture2D _iconHover;
         private static Texture2D _iconClick;
 
         private bool _hovering;
-        public RemoveButton(ContentsManager content)
+        public AddButton(ContentsManager content)
         {
-            _icon      ??= content.GetTexture("2175782.png");
-            _iconHover ??= content.GetTexture("2175784.png");
-            _iconClick ??= content.GetTexture("2175783.png");
+            _icon      ??= content.GetTexture("155902.png");
+            _iconHover ??= content.GetTexture("155904.png");
+            _iconClick ??= content.GetTexture("155903.png");
             this.Texture = _icon;
         }
 
@@ -32,8 +32,7 @@ namespace Nekres.RotationTrainer.Core.UI.Controls
             base.OnMouseEntered(e);
         }
 
-        protected override void OnMouseLeft(MouseEventArgs e)
-        {
+        protected override void OnMouseLeft(MouseEventArgs e) {
             _hovering = false;
             this.Texture = _icon;
             base.OnMouseLeft(e);

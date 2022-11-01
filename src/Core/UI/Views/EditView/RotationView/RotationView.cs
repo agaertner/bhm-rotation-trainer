@@ -6,6 +6,7 @@ using Blish_HUD;
 using Blish_HUD.Controls;
 using Blish_HUD.Graphics.UI;
 using Microsoft.Xna.Framework;
+using Nekres.RotationTrainer.Core.UI.Controls;
 using Nekres.RotationTrainer.Core.UI.Models;
 using Nekres.RotationTrainer.Player.Models;
 
@@ -25,11 +26,20 @@ namespace Nekres.RotationTrainer.Core.UI.Views {
                 Parent     = buildPanel,
                 Text       = "Opener",
                 StrokeText = true,
-                Width      = buildPanel.ContentRegion.Width,
+                Width      = 80,
                 Height     = 32,
                 Font       = GameService.Content.DefaultFont18,
                 Left       = 0,
                 Top        = 0
+            };
+
+            var addToOpenerButton = new AddButton(RotationTrainerModule.Instance.ContentsManager) {
+                Parent = buildPanel,
+                Width = 32,
+                Height = 32,
+                Bottom = openerLabel.Bottom,
+                Left = openerLabel.Right,
+                BasicTooltipText = "Add a new action."
             };
 
             var openerPanel = new FlowPanel {
@@ -42,15 +52,28 @@ namespace Nekres.RotationTrainer.Core.UI.Views {
                 ShowTint = false
             };
 
+            addToOpenerButton.Click += (_, _) => {
+                this.AddAbility(_model.Opener, openerPanel, _model.Opener.Count());
+            };
+
             var loopLabel = new Label {
                 Parent     = buildPanel,
                 Text       = "Loop",
                 StrokeText = true,
-                Width      = buildPanel.ContentRegion.Width,
+                Width      = 80,
                 Height     = 32,
                 Font       = GameService.Content.DefaultFont18,
                 Left       = 0,
                 Top        = openerPanel.Bottom + 5
+            };
+
+            var addToLoopButton = new AddButton(RotationTrainerModule.Instance.ContentsManager) {
+                Parent           = buildPanel,
+                Width            = 32,
+                Height           = 32,
+                Bottom           = loopLabel.Bottom,
+                Left             = loopLabel.Right,
+                BasicTooltipText = "Add a new action."
             };
 
             var loopPanel = new FlowPanel {
@@ -63,10 +86,14 @@ namespace Nekres.RotationTrainer.Core.UI.Views {
                 ShowTint = false
             };
 
+            addToLoopButton.Click += (_, _) => {
+                this.AddAbility(_model.Loop, loopPanel, _model.Loop.Count());
+            };
+
             _cancelToken = new CancellationTokenSource();
             await Task.Run(() => {
-                this.AddAbilities(_model.Opener, openerPanel, OnRotationOpenerChanged);
-                this.AddAbilities(_model.Loop,   loopPanel,   OnRotationLoopChanged);
+                this.AddAbilities(_model.Opener, openerPanel);
+                this.AddAbilities(_model.Loop,   loopPanel);
             }, _cancelToken.Token);
 
             base.Build(buildPanel);
@@ -78,57 +105,49 @@ namespace Nekres.RotationTrainer.Core.UI.Views {
             base.Unload();
         }
 
-        private void OnRotationOpenerChanged(object o, EventArgs e) {
-            var rot = ((Rotation)o).ToString();
-            if (!Rotation.TryParse(rot, out _)) {
-                ScreenNotification.ShowNotification("Something went wrong.", ScreenNotification.NotificationType.Error);
-                RotationTrainerModule.Logger.Debug($"Unable to deserialize rotation: {rot}");
-                return;
+        private void AddAbilities(Rotation rotation, FlowPanel panel) {
+            for (int i = 0; !_cancelToken.IsCancellationRequested && i < rotation.Count(); i++) {
+                this.CreateAbilityView(rotation, rotation[i], panel, i);
             }
-            _model.Opener = rot;
         }
 
-        private void OnRotationLoopChanged(object o, EventArgs e) {
-            var rot = ((Rotation)o).ToString();
-            if (!Rotation.TryParse(rot, out _)) {
-                ScreenNotification.ShowNotification("Something went wrong.", ScreenNotification.NotificationType.Error);
-                RotationTrainerModule.Logger.Debug($"Unable to deserialize rotation: {rot}");
-                return;
-            }
-            _model.Loop = rot;
+        private void CreateAbilityView(Rotation rotation, Ability ability, FlowPanel panel, int index) {
+            var abilityDetails = new ViewContainer {
+                Parent = panel,
+                Width    = panel.Width - 13,
+                Height   = 35,
+                ShowTint = true
+            };
+
+            var abilityDetailsView = new AbilityDetailsView(ability, index);
+            abilityDetailsView.Remove += (_, e) => {
+                panel.Children.Remove(abilityDetails);
+                rotation.RemoveAt(e.Value);
+                this.Invalidate(panel, rotation);
+            };
+
+            abilityDetailsView.Add += (_, e) => {
+                this.AddAbility(rotation, panel, e.Value);
+            };
+            abilityDetails.Show(abilityDetailsView);
+            panel.Children.Remove(abilityDetails);
+            panel.Children.Insert(index, abilityDetails);
+            panel.Invalidate();
         }
 
-        private void AddAbilities(string rotation, FlowPanel panel, EventHandler<EventArgs> callback) {
-            if (!Rotation.TryParse(rotation, out var opener)) {
-                return;
-            }
-            
-            int number = 1;
-            foreach (var ability in opener) {
-                if (_cancelToken.IsCancellationRequested) {
-                    return;
-                }
+        private void AddAbility(Rotation rotation, FlowPanel panel, int index) {
+            var newAbility = new Ability(GuildWarsAction.None);
+            this.CreateAbilityView(rotation, newAbility, panel, index);
+            rotation.Insert(index, newAbility);
+            this.Invalidate(panel, rotation);
+        }
 
-                var abilityDetails = new ViewContainer {
-                    Parent   = panel,
-                    Width    = panel.Width - 13,
-                    Height   = 35,
-                    ShowTint = true
-                };
-
-                var abilityDetailsView = new AbilityDetailsView(ability, number++);
-                abilityDetailsView.Remove += (o, e) => {
-                    var index = e.Value - 1;
-                    panel.Children.RemoveAt(index);
-                    panel.Invalidate();
-                    for (int i = index; !_cancelToken.IsCancellationRequested && i < panel.Count(); i++) {
-                        var ctrl = (AbilityDetailsView)((ViewContainer)panel.Children[i]).CurrentView;
-                        ctrl.Number = i + 1;
-                    }
-                };
-                abilityDetails.Show(abilityDetailsView);
+        private void Invalidate(FlowPanel panel, Rotation rotation) {
+            for (int i = 0; !_cancelToken.IsCancellationRequested && i < rotation.Count(); i++) {
+                var ctrl = (AbilityDetailsView)((ViewContainer)panel.Children[i]).CurrentView;
+                ctrl.Index = i;
             }
-            opener.Changed += callback;
+            panel.Invalidate();
         }
     }
 }

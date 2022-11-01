@@ -25,14 +25,6 @@ namespace Nekres.RotationTrainer.Core.Services {
                 Connection = ConnectionType.Shared
             });
             _ctx = _db.GetCollection<TemplateEntity>("templates");
-
-            Upsert(new TemplateModel(new Guid("97d7ddf8-06cc-4ae4-8a7a-45a2ea5ea712"), DateTime.UtcNow, DateTime.UtcNow, GameService.Gw2Mumble.Info.BuildId) {
-                Title            = "Condition Untamed (Example)",
-                BuildTemplate    = "[&DQQePSA2SBd5AAAAARsAALYAAAC/AAAAwAAAAD0AAAAAAAAAAAAAAAAAAAA=]",
-                PrimaryWeaponSet   = new TemplateModel.WeaponSet(SkillWeaponType.Axe, SkillWeaponType.Axe),
-                SecondaryWeaponSet = new TemplateModel.WeaponSet(SkillWeaponType.None, SkillWeaponType.None),
-                Rotation         = new TemplateModel.BuildRotation("1 2 3", "2 3 4 u1 1/4000 2 3 elite 4 u2 1/4000 2 heal")
-            });
         }
 
         public void Upsert(TemplateModel model) {
@@ -44,8 +36,8 @@ namespace Nekres.RotationTrainer.Core.Services {
                 GameService.Content.PlaySoundEffectByName("color-change");
             } else {
                 e.Title                   = model.Title;
-                e.RotationOpener          = model.Rotation.Opener;
-                e.RotationLoop            = model.Rotation.Loop;
+                e.RotationOpener          = model.Rotation.Opener.ToString();
+                e.RotationLoop            = model.Rotation.Loop.ToString();
                 e.BuildTemplate           = model.BuildTemplate;
                 e.PrimaryWeaponMainHand   = model.PrimaryWeaponSet.MainHand;
                 e.PrimaryWeaponOffHand    = model.PrimaryWeaponSet.OffHand;

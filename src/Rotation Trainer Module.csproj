@@ -62,6 +62,8 @@
   <ItemGroup>
     <Compile Include="..\submodules\litedb\LiteDB\**\*.cs" Link="_Submodules\LiteDB\%(RecursiveDir)%(Filename)%(Extension)" />
     <Compile Include="Core\UI\Controls\AbilityHint.cs" />
+    <Compile Include="Core\UI\Controls\AddButton.cs" />
+    <Compile Include="Core\UI\Controls\ConfirmationPrompt.cs" />
     <Compile Include="Core\UI\Controls\RemoveButton.cs" />
     <Compile Include="Core\UI\Controls\DeleteButton.cs" />
     <Compile Include="Core\UI\Controls\InputPrompt\BuildChatLinkInputPrompt.cs" />

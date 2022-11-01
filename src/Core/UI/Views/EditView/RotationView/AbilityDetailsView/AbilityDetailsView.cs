@@ -15,27 +15,28 @@ using TextBox = Blish_HUD.Controls.TextBox;
 namespace Nekres.RotationTrainer.Core.UI.Views {
     internal class AbilityDetailsView : View {
         public event EventHandler<ValueEventArgs<int>> Remove;
-
+        public event EventHandler<ValueEventArgs<int>> Add;
+        
         private static Texture2D _icon = RotationTrainerModule.Instance.ContentsManager.GetTexture("skill_frame.png");
 
         private Ability _model;
 
-        private int     _number;
-        public int Number {
-            get => _number;
+        private int _index;
+        public int Index {
+            get => _index;
             set {
-                _number = value;
+                _index = value;
                 if (_numberLabel != null) {
-                    _numberLabel.Text = $"{_number}.";
+                    _numberLabel.Text = $"{_index + 1}.";
                 }
             }
         }
 
         private Label _numberLabel;
 
-        public AbilityDetailsView(Ability model, int number) {
+        public AbilityDetailsView(Ability model, int index) {
             _model = model;
-            _number = number;
+            _index = index;
         }
 
         protected override void Build(Container buildPanel) {
@@ -44,13 +45,13 @@ namespace Nekres.RotationTrainer.Core.UI.Views {
                 Parent              = buildPanel,
                 Width               = 24,
                 Height              = 24,
-                Left = 5,
-                Top = 5,
+                Left                = 5,
+                Top                 = 5,
                 HorizontalAlignment = HorizontalAlignment.Right,
                 VerticalAlignment   = VerticalAlignment.Middle,
                 Font                = GameService.Content.GetFont(ContentService.FontFace.Menomonia, ContentService.FontSize.Size20, ContentService.FontStyle.Regular),
                 StrokeText          = true,
-                Text                = $"{_number}."
+                Text                = $"{_index + 1}."
             };
 
             var icon = new Image {
@@ -91,7 +92,7 @@ namespace Nekres.RotationTrainer.Core.UI.Views {
 
             var durationLabel = new Label {
                 Parent              = buildPanel,
-                Width               = 80,
+                Width               = 75,
                 Height              = 24,
                 Left                = durationInput.Right + 5,
                 Top                 = durationInput.Top,
@@ -113,7 +114,7 @@ namespace Nekres.RotationTrainer.Core.UI.Views {
 
             var repetitionsLabel = new Label {
                 Parent              = buildPanel,
-                Width               = 80,
+                Width               = 40,
                 Height              = 24,
                 Left                = repetitionsInput.Right + 5,
                 Top                 = repetitionsInput.Top,
@@ -122,6 +123,17 @@ namespace Nekres.RotationTrainer.Core.UI.Views {
                 Font                = GameService.Content.GetFont(ContentService.FontFace.Menomonia, ContentService.FontSize.Size20, ContentService.FontStyle.Regular),
                 Text                = _model.Repetitions.ToString()
             };
+
+            var messageInput = new TextBox {
+                Parent = buildPanel,
+                Width = 120,
+                Height = 24,
+                Top = repetitionsLabel.Top,
+                Left = repetitionsLabel.Right + 5,
+                Text = _model.Message,
+                BasicTooltipText = "Add or Change Message"
+            };
+            messageInput.InputFocusChanged += OnMessageInputFocusChanged;
 
             durationInput.Click += (o, e) => NumericInputPrompt.ShowPrompt((confirmed, n) => {
                 if (!confirmed) {
@@ -139,19 +151,34 @@ namespace Nekres.RotationTrainer.Core.UI.Views {
                 repetitionsLabel.Text            = n.ToString();
             }, "Enter a Number of Repetitions:", _model.Repetitions.ToString());
 
-            var removeButton = new RemoveButton(RotationTrainerModule.Instance.ContentsManager) {
+            var addButton = new AddButton(RotationTrainerModule.Instance.ContentsManager) {
                 Parent = buildPanel,
-                Width  = 24,
-                Height = 24,
-                Right  = buildPanel.ContentRegion.Width - 13,
-                Top    = repetitionsLabel.Top
+                Width  = 32,
+                Height = 32,
+                Right  = buildPanel.ContentRegion.Width - 16,
+                Top    = repetitionsLabel.Top - 4,
+                BasicTooltipText = "Insert a new action here."
+            };
+            addButton.Click += OnAddClicked;
+
+            var removeButton = new RemoveButton(RotationTrainerModule.Instance.ContentsManager) {
+                Parent           = buildPanel,
+                Width            = 24,
+                Height           = 24,
+                Right            = addButton.Left - 10,
+                Top              = repetitionsLabel.Top,
+                BasicTooltipText = "Remove this action."
             };
             removeButton.Click += OnRemoveClicked;
             base.Build(buildPanel);
         }
 
+        private void OnAddClicked(object o, MouseEventArgs e) {
+            Add?.Invoke(this, new ValueEventArgs<int>(this.Index));
+        }
+
         private void OnRemoveClicked(object o, MouseEventArgs e) {
-            Remove?.Invoke(this, new ValueEventArgs<int>(Number));
+            Remove?.Invoke(this, new ValueEventArgs<int>(this.Index));
         }
 
         private void OnActionChanged(object o, ValueChangedEventArgs e) {
@@ -160,5 +187,13 @@ namespace Nekres.RotationTrainer.Core.UI.Views {
             }
             _model.Action = newAction;
         }
+
+        private void OnMessageInputFocusChanged(object o, ValueEventArgs<bool> e) {
+            if (e.Value) {
+                return;
+            }
+            _model.Message = ((TextBox)o).Text;
+        }
+
     }
 }
