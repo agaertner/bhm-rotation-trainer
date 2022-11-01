@@ -33,6 +33,7 @@ namespace Nekres.RotationTrainer.Player.Models {
         Interact
     }
     internal class Rotation : IEnumerable<Ability> {
+        private const string DELIMITER = "╡\t╞";
         private static Regex _syntaxPattern = new Regex(@"\[(?<message>.*?)\]\((?<action>[^\*\/]+)(\*(?<repetitions>[1-9]{1}[0-9]*))?(\/(?<duration>[1-9]{1}[0-9]*))?\)", RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture | RegexOptions.Singleline);
         private static Dictionary<string, GuildWarsAction> _map = new() {
             {"swap", GuildWarsAction.SwapWeapons},
@@ -118,7 +119,7 @@ namespace Nekres.RotationTrainer.Player.Models {
 
             var abilities = new List<Ability>();
 
-            string[] actions = rawRotation.Split(' ');
+            string[] actions = rawRotation.Split(new []{ DELIMITER }, StringSplitOptions.None);
 
             foreach (string s in actions) {
 
@@ -199,7 +200,7 @@ namespace Nekres.RotationTrainer.Player.Models {
             if (!_abilities.Any()) {
                 return string.Empty;
             }
-            return string.Join(" ", _abilities.Select(x => x.ToString()));
+            return string.Join(DELIMITER, _abilities.Select(x => x.ToString()));
         }
     }
 }

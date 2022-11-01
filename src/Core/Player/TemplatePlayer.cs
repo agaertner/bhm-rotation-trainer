@@ -28,19 +28,19 @@ namespace Nekres.RotationTrainer.Player {
                 _cancelButton?.Dispose();
             }
 
+            if (RotationTrainerModule.Instance.ActionBindings.Values.Any(x => x.Value.PrimaryKey == Keys.None && x.Value.ModifierKeys == ModifierKeys.None)) {
+                ScreenNotification.ShowNotification("Key bindings need to be assigned.");
+                return;
+            }
+
             _cancelButton = new HealthPoolButton {
                 Parent = GameService.Graphics.SpriteScreen,
-                Text = "Stop Practicing"
+                Text   = "Stop Practicing"
             };
             _cancelButton.Click += (o, _) => {
                 _cancelToken?.Cancel();
                 ((HealthPoolButton)o).Dispose();
             };
-
-            if (RotationTrainerModule.Instance.ActionBindings.Values.Any(x => x.Value.PrimaryKey == Keys.None && x.Value.ModifierKeys == ModifierKeys.None)) {
-                ScreenNotification.ShowNotification("Key bindings need to be assigned.");
-                return;
-            }
 
             _cancelToken = new CancellationTokenSource();
 

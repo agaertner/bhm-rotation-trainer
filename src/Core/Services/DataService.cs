@@ -6,7 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Gw2Sharp.WebApi.V2.Models;
 
 namespace Nekres.RotationTrainer.Core.Services {
     internal class DataService : IDisposable {
