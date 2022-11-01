@@ -1,6 +1,6 @@
 {
   "name": "Special Forces",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "namespace": "Nekres.RotationTrainer",
   "package": "Rotation Trainer Module.dll",
   "manifest_version": 1,
