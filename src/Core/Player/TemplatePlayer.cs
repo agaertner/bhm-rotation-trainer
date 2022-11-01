@@ -15,7 +15,7 @@ namespace Nekres.RotationTrainer.Player {
         private bool           _disposed;
 
         private CancellationTokenSource _cancelToken;
-
+        private HealthPoolButton        _cancelButton;
         internal TemplatePlayer() {
             
         }
@@ -25,13 +25,14 @@ namespace Nekres.RotationTrainer.Player {
             if (_cancelToken != null) {
                 _cancelToken.Cancel();
                 _cancelToken.Dispose();
+                _cancelButton?.Dispose();
             }
 
-            var healthPoolBtn = new HealthPoolButton {
+            _cancelButton = new HealthPoolButton {
                 Parent = GameService.Graphics.SpriteScreen,
                 Text = "Stop Practicing"
             };
-            healthPoolBtn.Click += (o, _) => {
+            _cancelButton.Click += (o, _) => {
                 _cancelToken?.Cancel();
                 ((HealthPoolButton)o).Dispose();
             };
@@ -50,9 +51,12 @@ namespace Nekres.RotationTrainer.Player {
         private void PlayRotation(TemplateModel.BuildRotation rotation) {
             var opener = new List<Ability>(rotation.Opener);
             for (int i = 0; !_disposed && !_cancelToken.IsCancellationRequested && i < opener.Count; i++) {
-                this.PlayAbility(opener[i]);
+                if (!this.PlayAbility(opener[i])) {
+                    return;
+                }
             }
             if (!rotation.Loop.Any()) {
+                _cancelButton?.Dispose();
                 return;
             }
             var loop = new List<Ability>(rotation.Loop);
@@ -83,6 +87,7 @@ namespace Nekres.RotationTrainer.Player {
         public void Dispose() {
             _disposed = true;
             _cancelToken?.Dispose();
+            _cancelButton?.Dispose();
         }
     }
 }
