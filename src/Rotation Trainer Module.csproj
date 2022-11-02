@@ -71,6 +71,7 @@
     <Compile Include="Core\UI\Controls\InputPrompt\NumericInputPrompt.cs" />
     <Compile Include="Core\UI\Controls\StoreButton.cs" />
     <Compile Include="Core\UI\Controls\UtilityRemapper.cs" />
+    <Compile Include="Core\UI\Models\RotationJsonConverter.cs" />
     <Compile Include="Core\UI\Views\EditView\ConfigView\ConfigPresenter.cs" />
     <Compile Include="Core\UI\Views\EditView\ConfigView\ConfigView.cs" />
     <Compile Include="Core\UI\Views\EditView\ConfigView\WeaponSetView\WeaponSetView.cs" />

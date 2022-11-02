@@ -8,7 +8,12 @@ namespace Nekres.RotationTrainer {
                 Error                 = (_, args) => { success = false; args.ErrorContext.Handled = true; },
                 MissingMemberHandling = MissingMemberHandling.Error
             };
-            result = JsonConvert.DeserializeObject<T>(json, settings);
+            try {
+                result = JsonConvert.DeserializeObject<T>(json, settings);
+            } catch (JsonReaderException) {
+                result  = default;
+                success = false;
+            }
             return success;
         }
     }

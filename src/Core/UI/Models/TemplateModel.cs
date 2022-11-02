@@ -16,32 +16,32 @@ namespace Nekres.RotationTrainer.Core.UI.Models {
         /// <summary>
         /// Unique identifier of this build.
         /// </summary>
-        [JsonProperty("id")]
+        [JsonProperty("uid")]
         public Guid Id { get; private init; }
 
         /// <summary>
         /// Indicates when this rotation has been created (UTC).
         /// </summary>
-        [JsonProperty("creationDate")]
+        [JsonProperty("cat")]
         public DateTime CreationDate { get; private init; }
 
         /// <summary>
         /// Indicates when this rotation was last modified (UTC).
         /// </summary>
-        [JsonProperty("modifiedDate")]
+        [JsonProperty("mat")]
         public DateTime ModifiedDate { get; private init; }
 
         /// <summary>
         /// The Guild Wars 2 client build id.
         /// </summary>
-        [JsonProperty("clientBuildId")]
+        [JsonProperty("gw2")]
         public int ClientBuildId { get; private init; }
 
         private string _title;
         /// <summary>
         /// Custom title of this build.
         /// </summary>
-        [JsonProperty("title")]
+        [JsonProperty("tit")]
         public string Title 
         {
             get => _title;
@@ -58,7 +58,7 @@ namespace Nekres.RotationTrainer.Core.UI.Models {
         /// <summary>
         /// The build template code.
         /// </summary>
-        [JsonProperty("buildTemplate")]
+        [JsonProperty("tem")]
         public string BuildTemplate 
         { 
             get => _buildTemplate;
@@ -75,7 +75,7 @@ namespace Nekres.RotationTrainer.Core.UI.Models {
         /// <summary>
         /// The 1st weapon set.
         /// </summary>
-        [JsonProperty("primaryWeapons")]
+        [JsonProperty("prw")]
         public WeaponSet PrimaryWeaponSet {
             get => _primaryWeaponSet;
             set {
@@ -95,7 +95,7 @@ namespace Nekres.RotationTrainer.Core.UI.Models {
         /// <summary>
         /// The 2nd weapon set.
         /// </summary>
-        [JsonProperty("secondaryWeapons")]
+        [JsonProperty("snw")]
         public WeaponSet SecondaryWeaponSet {
             get => _secondaryWeaponSet;
             set {
@@ -115,7 +115,7 @@ namespace Nekres.RotationTrainer.Core.UI.Models {
         /// <summary>
         /// The rotation.
         /// </summary>
-        [JsonProperty("rotation")]
+        [JsonProperty("rot")]
         public BuildRotation Rotation 
         { 
             get => _rotation;
@@ -224,7 +224,7 @@ namespace Nekres.RotationTrainer.Core.UI.Models {
             public event EventHandler<EventArgs> Changed;
 
             private SkillWeaponType _mainHand;
-            [JsonProperty("mainHand"), JsonConverter(typeof(StringEnumConverter))]
+            [JsonProperty("mhd"), JsonConverter(typeof(StringEnumConverter))]
             public SkillWeaponType MainHand {
                 get => _mainHand;
                 set {
@@ -237,7 +237,7 @@ namespace Nekres.RotationTrainer.Core.UI.Models {
             }
 
             private SkillWeaponType _offHand;
-            [JsonProperty("offHand"), JsonConverter(typeof(StringEnumConverter))]
+            [JsonProperty("ohd"), JsonConverter(typeof(StringEnumConverter))]
             public SkillWeaponType OffHand {
                 get => _offHand;
                 set {
@@ -260,7 +260,7 @@ namespace Nekres.RotationTrainer.Core.UI.Models {
             public event EventHandler<EventArgs> Changed;
 
             private Rotation _opener;
-            [JsonProperty("opener")]
+            [JsonProperty("ope"), JsonConverter(typeof(RotationJsonConverter))]
             public Rotation Opener {
                 get => _opener;
                 set {
@@ -277,7 +277,7 @@ namespace Nekres.RotationTrainer.Core.UI.Models {
             }
 
             private Rotation _loop;
-            [JsonProperty("loop")]
+            [JsonProperty("loo"), JsonConverter(typeof(RotationJsonConverter))]
             public Rotation Loop {
                 get => _loop;
                 set {
