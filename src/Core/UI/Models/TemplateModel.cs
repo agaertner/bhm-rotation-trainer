@@ -7,7 +7,8 @@ using Newtonsoft.Json.Converters;
 using System;
 using System.Linq;
 using System.Text;
-
+using Nekres.RotationTrainer.Core.Player.Models;
+using Nekres.RotationTrainer.Player.Models;
 namespace Nekres.RotationTrainer.Core.UI.Models {
     internal class TemplateModel 
     {
@@ -164,7 +165,7 @@ namespace Nekres.RotationTrainer.Core.UI.Models {
             _primaryWeaponSet   = new WeaponSet(SkillWeaponType.None, SkillWeaponType.None);
             _secondaryWeaponSet = new WeaponSet(SkillWeaponType.None, SkillWeaponType.None);
 
-            _rotation     = new BuildRotation(string.Empty, string.Empty);
+            _rotation     = new BuildRotation(string.Empty, string.Empty, string.Empty);
             _utilityOrder = new int[3] { 0, 1, 2 };
         }
 
@@ -293,9 +294,26 @@ namespace Nekres.RotationTrainer.Core.UI.Models {
                 }
             }
 
-            public BuildRotation(string opener, string loop) {
-                _opener = Player.Models.Rotation.TryParse(opener, out var o) ? o : new Rotation();
-                _loop = Player.Models.Rotation.TryParse(loop, out var l) ? l : new Rotation();
+            private RotationHot _priorities;
+            public RotationHot Priorities {
+                get => _priorities;
+                set {
+                    if (_priorities != null && _priorities.Equals(value)) {
+                        return;
+                    }
+                    _priorities = value;
+                    Changed?.Invoke(this, EventArgs.Empty);
+
+                    if (value != null) {
+                        value.Changed += OnRotationChanged;
+                    }
+                }
+            }
+
+            public BuildRotation(string opener, string loop, string priorityList) {
+                _opener = RotationTrainer.Player.Models.Rotation.TryParse(opener, out var o) ? o : new Rotation();
+                _loop   = RotationTrainer.Player.Models.Rotation.TryParse(loop,   out var l) ? l : new Rotation();
+                _priorities = RotationHot.TryParse(priorityList,   out var p) ? p : new RotationHot();
             }
 
             private void OnRotationChanged(object sender, EventArgs e) {

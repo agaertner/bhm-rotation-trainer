@@ -1,13 +1,14 @@
 ﻿using Blish_HUD;
 using Blish_HUD.Controls;
 using Blish_HUD.Graphics.UI;
-using Microsoft.Xna.Framework.Graphics;
-using Nekres.RotationTrainer.Player.Models;
-using System;
-using System.Linq;
 using Blish_HUD.Input;
+using Microsoft.Xna.Framework.Graphics;
 using Nekres.RotationTrainer.Core.Controls;
 using Nekres.RotationTrainer.Core.UI.Controls;
+using System;
+using System.Linq;
+using Nekres.RotationTrainer.Core.Player.Models;
+using Action = Nekres.RotationTrainer.Core.Player.Models.Action;
 using HorizontalAlignment = Blish_HUD.Controls.HorizontalAlignment;
 using Label = Blish_HUD.Controls.Label;
 using TextBox = Blish_HUD.Controls.TextBox;
@@ -19,7 +20,7 @@ namespace Nekres.RotationTrainer.Core.UI.Views {
         
         private static Texture2D _icon = RotationTrainerModule.Instance.ContentsManager.GetTexture("skill_frame.png");
 
-        private Ability _model;
+        private Action _model;
 
         private int _index;
         public int Index {
@@ -34,7 +35,7 @@ namespace Nekres.RotationTrainer.Core.UI.Views {
 
         private Label _numberLabel;
 
-        public AbilityDetailsView(Ability model, int index) {
+        public AbilityDetailsView(Action model, int index) {
             _model = model;
             _index = index;
         }

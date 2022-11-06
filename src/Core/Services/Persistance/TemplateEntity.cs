@@ -80,6 +80,12 @@ namespace Nekres.RotationTrainer.Core.Services.Persistance {
         public string RotationLoop { get; set; }
 
         /// <summary>
+        /// Priority actions of the rotation.
+        /// </summary>
+        [BsonField("RotationPriorities")]
+        public string RotationPriorities { get; set; }
+
+        /// <summary>
         /// Remappings of the order of utility keys in the <see cref="BuildTemplate"/>. 
         /// </summary>
         /// <remarks>
@@ -124,7 +130,7 @@ namespace Nekres.RotationTrainer.Core.Services.Persistance {
                 PrimaryWeaponSet   = new TemplateModel.WeaponSet(this.PrimaryWeaponMainHand, this.PrimaryWeaponOffHand),
                 SecondaryWeaponSet = new TemplateModel.WeaponSet(this.SecondaryWeaponMainHand, this.SecondaryWeaponOffHand),
 
-                Rotation     = new TemplateModel.BuildRotation(this.RotationOpener, this.RotationLoop),
+                Rotation     = new TemplateModel.BuildRotation(this.RotationOpener, this.RotationLoop, this.RotationPriorities),
                 UtilityOrder = this.UtilityOrder,
             };
         }

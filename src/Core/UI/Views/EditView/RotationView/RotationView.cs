@@ -6,9 +6,11 @@ using Blish_HUD;
 using Blish_HUD.Controls;
 using Blish_HUD.Graphics.UI;
 using Microsoft.Xna.Framework;
+using Nekres.RotationTrainer.Core.Player.Models;
 using Nekres.RotationTrainer.Core.UI.Controls;
 using Nekres.RotationTrainer.Core.UI.Models;
 using Nekres.RotationTrainer.Player.Models;
+using Action = Nekres.RotationTrainer.Core.Player.Models.Action;
 
 namespace Nekres.RotationTrainer.Core.UI.Views {
     internal class RotationView : View {
@@ -111,7 +113,7 @@ namespace Nekres.RotationTrainer.Core.UI.Views {
             }
         }
 
-        private void CreateAbilityView(Rotation rotation, Ability ability, FlowPanel panel, int index) {
+        private void CreateAbilityView(Rotation rotation, Action action, FlowPanel panel, int index) {
             var abilityDetails = new ViewContainer {
                 Parent = panel,
                 Width    = panel.Width - 13,
@@ -119,7 +121,7 @@ namespace Nekres.RotationTrainer.Core.UI.Views {
                 ShowTint = true
             };
 
-            var abilityDetailsView = new AbilityDetailsView(ability, index);
+            var abilityDetailsView = new AbilityDetailsView(action, index);
             abilityDetailsView.Remove += (_, e) => {
                 panel.Children.Remove(abilityDetails);
                 rotation.RemoveAt(e.Value);
@@ -136,7 +138,7 @@ namespace Nekres.RotationTrainer.Core.UI.Views {
         }
 
         private void AddAbility(Rotation rotation, FlowPanel panel, int index) {
-            var newAbility = new Ability(GuildWarsAction.None);
+            var newAbility = new Action(GuildWarsAction.None);
             this.CreateAbilityView(rotation, newAbility, panel, index);
             rotation.Insert(index, newAbility);
             this.Invalidate(panel, rotation);

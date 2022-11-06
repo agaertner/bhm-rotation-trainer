@@ -1,15 +1,14 @@
-﻿using Nekres.RotationTrainer.Core.UI.Controls;
-using Nekres.RotationTrainer.Player.Models;
+﻿using Blish_HUD;
+using Blish_HUD.Controls;
+using Microsoft.Xna.Framework.Input;
+using Nekres.RotationTrainer.Core.UI.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using Blish_HUD;
-using Blish_HUD.Controls;
-using Microsoft.Xna.Framework.Input;
-using Nekres.RotationTrainer.Core.UI.Models;
-
-namespace Nekres.RotationTrainer.Player {
+using Nekres.RotationTrainer.Core.Player.Controls;
+using Action = Nekres.RotationTrainer.Core.Player.Models.Action;
+namespace Nekres.RotationTrainer.Core.Player {
     internal class TemplatePlayer : IDisposable
     {
         private bool           _disposed;
@@ -49,7 +48,7 @@ namespace Nekres.RotationTrainer.Player {
         }
 
         private void PlayRotation(TemplateModel.BuildRotation rotation) {
-            var opener = new List<Ability>(rotation.Opener);
+            var opener = new List<Action>(rotation.Opener);
             for (int i = 0; !_disposed && !_cancelToken.IsCancellationRequested && i < opener.Count; i++) {
                 if (!this.PlayAbility(opener[i])) {
                     return;
@@ -59,7 +58,7 @@ namespace Nekres.RotationTrainer.Player {
                 _cancelButton?.Dispose();
                 return;
             }
-            var loop = new List<Ability>(rotation.Loop);
+            var loop = new List<Action>(rotation.Loop);
             while (!_disposed || !_cancelToken.IsCancellationRequested) {
                 for (int i = 0; !_disposed && !_cancelToken.IsCancellationRequested && i < loop.Count; i++) {
                     if (this.PlayAbility(loop[i]))
@@ -71,8 +70,8 @@ namespace Nekres.RotationTrainer.Player {
             }
         }
 
-        private bool PlayAbility(Ability ability) {
-            var hint = AbilityHint.ShowHint(ability);
+        private bool PlayAbility(Action action) {
+            var hint = ActionHint.ShowHint(action);
             while (!hint.Completed) {
                 if (!_disposed && !_cancelToken.IsCancellationRequested) {
                     continue;

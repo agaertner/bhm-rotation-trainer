@@ -61,7 +61,13 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\submodules\litedb\LiteDB\**\*.cs" Link="_Submodules\LiteDB\%(RecursiveDir)%(Filename)%(Extension)" />
-    <Compile Include="Core\UI\Controls\AbilityHint.cs" />
+    <Compile Include="Core\Player\Controls\ActionHint\ActionHintBase.cs" />
+    <Compile Include="Core\Player\Models\Action\ActionBase.cs" />
+    <Compile Include="Core\Player\Models\Action\ActionHot.cs" />
+    <Compile Include="Core\Player\Models\Action\GwActionUtil.cs" />
+    <Compile Include="Core\Player\Models\Rotation\RotationBase.cs" />
+    <Compile Include="Core\Player\Models\Rotation\RotationHot.cs" />
+    <Compile Include="Core\Player\Controls\ActionHint\ActionHint.cs" />
     <Compile Include="Core\UI\Controls\AddButton.cs" />
     <Compile Include="Core\UI\Controls\ConfirmationPrompt.cs" />
     <Compile Include="Core\UI\Controls\RemoveButton.cs" />
@@ -162,8 +168,8 @@
     <Compile Include="Core\UI\Views\LibraryView\LibraryModel.cs" />
     <Compile Include="Core\UI\Views\LibraryView\LibraryPresenter.cs" />
     <Compile Include="Core\UI\Views\LibraryView\LibraryView.cs" />
-    <Compile Include="Core\Player\Models\Rotation.cs" />
-    <Compile Include="Core\Player\Models\Ability.cs" />
+    <Compile Include="Core\Player\Models\Rotation\Rotation.cs" />
+    <Compile Include="Core\Player\Models\Action\Action.cs" />
     <Compile Include="Core\Player\TemplatePlayer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RotationTrainerModule.cs" />
