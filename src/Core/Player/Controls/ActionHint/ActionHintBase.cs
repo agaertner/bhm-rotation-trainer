@@ -51,31 +51,32 @@ namespace Nekres.RotationTrainer.Core.Player.Controls {
 
         private   Rectangle   _bounds;
         private   string      _text;
-        private   int         _arrowHeight;
+        
         private   Glide.Tween _arrowTween;
         private   KeyBinding  _keyBinding;
 
-        protected T           _action { get; private set; }
-        protected Rectangle   Bounds  { get; private set; }
+        protected int       ArrowHeight { get; set; } // Must be accessible; otherwise Glide won't find property from derived class.
+        protected T         Action      { get; private set; }
+        protected Rectangle Bounds      { get; private set; }
 
         public bool Completed { get; protected set; }
 
         protected ActionHintBase(T action) {
-            _action     = action;
+            this.Action     = action;
             this.Parent = GameService.Graphics.SpriteScreen;
             this.Size   = GameService.Graphics.SpriteScreen.Size;
 
-            _arrowTween = GameService.Animation.Tweener.Tween(this, new { _arrowHeight = _arrowHeight + 10 }, 0.7f).Repeat();
+            _arrowTween = GameService.Animation.Tweener.Tween(this, new { _arrowHeight = this.ArrowHeight + 10 }, 0.7f).Repeat();
 
             _abilityBounds.TryGetValue(action.Action, out _bounds);
             _abilityText.TryGetValue(action.Action, out _text);
 
             // Find key binding.
-            if (RotationTrainerModule.Instance.ActionBindings.TryGetValue(_action.Action, out SettingEntry<KeyBinding> keyBindingSetting)) {
+            if (RotationTrainerModule.Instance.ActionBindings.TryGetValue(this.Action.Action, out SettingEntry<KeyBinding> keyBindingSetting)) {
                 _keyBinding = keyBindingSetting.Value;
 
                 if (_keyBinding.PrimaryKey == Keys.None && _keyBinding.ModifierKeys == ModifierKeys.None) {
-                    ScreenNotification.ShowNotification($"You need to assign a key to {_action.Action.ToFriendlyString()}.");
+                    ScreenNotification.ShowNotification($"You need to assign a key to {this.Action.Action.ToFriendlyString()}.");
                 }
 
                 _keyBinding.Activated += OnActivated;
@@ -112,7 +113,7 @@ namespace Nekres.RotationTrainer.Core.Player.Controls {
 
             this.Bounds = new Rectangle(this.Width / 2 + _bounds.X - _bounds.Width / 2, this.Height - _bounds.Y - _bounds.Height, _bounds.Width, _bounds.Height);
 
-            var arrowDest = new Rectangle(this.Bounds.X, this.Bounds.Y - this.Bounds.Height - _arrowHeight, this.Bounds.Width, this.Bounds.Height);
+            var arrowDest = new Rectangle(this.Bounds.X, this.Bounds.Y - this.Bounds.Height - this.ArrowHeight, this.Bounds.Width, this.Bounds.Height);
 
             int textOffsetY = 0;
 
@@ -124,9 +125,9 @@ namespace Nekres.RotationTrainer.Core.Player.Controls {
                 spriteBatch.DrawStringOnCtrl(this, _text, _font, new Rectangle(arrowDest.X + (arrowDest.Width - (int)textSize.Width) / 2, arrowDest.Y - arrowDest.Height, (int)textSize.Width, arrowDest.Height), Color.White, false, true, 1, HorizontalAlignment.Center);
             }
 
-            if (!string.IsNullOrEmpty(_action.Message)) {
+            if (!string.IsNullOrEmpty(this.Action.Message)) {
                 var textWidth = (int)_font.MeasureString(_text).Width;
-                spriteBatch.DrawStringOnCtrl(this, _action.Message, _font, new Rectangle(arrowDest.X + (arrowDest.Width - textWidth) / 2, arrowDest.Y - arrowDest.Height - textOffsetY, textWidth, arrowDest.Height), Color.White, false, true, 1, HorizontalAlignment.Center);
+                spriteBatch.DrawStringOnCtrl(this, this.Action.Message, _font, new Rectangle(arrowDest.X + (arrowDest.Width - textWidth) / 2, arrowDest.Y - arrowDest.Height - textOffsetY, textWidth, arrowDest.Height), Color.White, false, true, 1, HorizontalAlignment.Center);
             }
 
             spriteBatch.DrawOnCtrl(this, _arrow, arrowDest, Color.Red);
